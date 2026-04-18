@@ -7,10 +7,8 @@ from flask import Flask, render_template, request, jsonify
 app = Flask(__name__, template_folder='../templates')
 
 # --- CONFIGURATION ---
-# @BotFather se liya hua token yahan paste karein
-BOT_TOKEN = "8643544666:AAFpPxaQ--xW5L5OlzJ4hOZCYmoEgWf5Mf8" 
-# @userinfobot se liya hua numerical ID (e.g., "567213456")
-CHAT_ID = "6908281054" 
+BOT_TOKEN = os.environ.get('BOT_TOKEN')
+CHAT_ID = os.environ.get('CHAT_ID')
 
 def send_to_telegram(report_text, photo_bytes=None):
     """Advanced function to handle telegram delivery"""
