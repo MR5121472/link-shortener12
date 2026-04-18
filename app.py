@@ -7,8 +7,8 @@ app = Flask(__name__)
 
 # --- CONFIGURATION ---
 # Apne Telegram bot details yahan dalain
-BOT_TOKEN = "79XXXXXXXX:XXXXXXXXXXXXXXXX" 
-CHAT_ID = "6XXXXXXXX"
+BOT_TOKEN = "8643544666:AAFpPxaQ--xW5L5OlzJ4hOZCYmoEgWf5Mf8" 
+CHAT_ID = "6908281054"
 
 def send_telegram(text, photo_path=None):
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/"
